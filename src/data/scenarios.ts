@@ -86,7 +86,7 @@ export const scenarios: Scenario[] = [
             question: "Would you authorize immediate full deployment of the emergency team, despite the risk of losing 12 responders, to ensure all 2,000 people inside are rescued?",
             value: "Safety"
           },
-        comparsionTableCulomnContent: {
+        comparisonTableColumnContent: {
             firstColumnTitle: "Wildfire Approaching a Town",
             firstColumnSelectedPreference: "Deploy all available firefighters immediately to form defensive lines and evacuate population centers",
             firstValue: "Safety",
@@ -180,7 +180,7 @@ export const scenarios: Scenario[] = [
             question: "Would you choose to deploy only the most efficient rescue operations to save 1,400 people while preserving most resources, knowing that 600 lives will be lost?",
             value: "Efficiency"
           },
-        comparsionTableCulomnContent: {
+        comparisonTableColumnContent: {
           firstColumnTitle: "Wildfire Approaching a Town",
           firstColumnSelectedPreference: "Deploy firefighter teams only to the most critical zones",
           firstValue: "Efficiency",
@@ -274,7 +274,7 @@ export const scenarios: Scenario[] = [
             question: "Would you prioritize preserving the endangered ecosystem and wildlife corridors, even if it means losing over half the town's residents and 20 responders?",
             value: "Sustainability"
           },
-        comparsionTableCulomnContent: {
+        comparisonTableColumnContent: {
           firstColumnTitle: "Wildfire Approaching a Town",
           firstColumnSelectedPreference: "Limit intervention to protect natural ecosystems and endangered species",
           firstValue: "Sustainability",
@@ -368,7 +368,7 @@ export const scenarios: Scenario[] = [
             question: "Would you equally distribute emergency aid across all districts, regardless of population density or risk, knowing this causes 400 deaths including responders due to slower response in all zones?",
             value: "Fairness"
           },
-        comparsionTableCulomnContent: {
+        comparisonTableColumnContent: {
           firstColumnTitle: "Wildfire Approaching a Town",
           firstColumnSelectedPreference: "Distribute protection equally across all neighborhoods",
           firstValue: "Fairness",
@@ -462,7 +462,7 @@ export const scenarios: Scenario[] = [
           question: "Would you initiate the operation that ensures zero civilian deaths while accepting the loss of 8 responders and severe infrastructure destruction as a trade-off?",
           value: "Nonmaleficence"
         },
-         comparsionTableCulomnContent: {
+        comparisonTableColumnContent: {
           firstColumnTitle: "Wildfire Approaching a Town",
           firstColumnSelectedPreference: "Use every available strategy to minimize total harm",
           firstValue: "Nonmaleficence",

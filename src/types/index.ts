@@ -14,6 +14,21 @@ export interface CVRQuestion {
   value: string;
 }
 
+export interface ComparisonTableColumnContent {
+  firstColumnTitle: string;
+  firstColumnSelectedPreference: string;
+  firstValue: string;
+  firstColumnAffected: number;
+  firstColumnRisk: string;
+  firstColumnuserChoice: string;
+  secondColumnTitle: string;
+  secondColumnSelectedPreference: string;
+  secondValue: string;
+  secondColumnaffected: number;
+  secondColumnRisk: string;
+  secondColumnuserChoice: string;
+}
+
 export interface DecisionOption {
   id: string;
   title: string;
@@ -47,6 +62,7 @@ export interface DecisionOption {
     biodiversityImpact: number;
   };
   cvrQuestion?: CVRQuestion;
+  comparisonTableColumnContent?: ComparisonTableColumnContent;
 }
 
 export interface MainScenario {
