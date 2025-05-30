@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { DecisionOption } from '../types';
-import MetricsDisplay from './MetricsDisplay';
 
 interface RankedOptionsViewProps {
   scenario: {
@@ -52,7 +51,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
       if (preferenceType === 'true') {
         const aScore = calculateMetricsScore(a, rankings);
         const bScore = calculateMetricsScore(b, rankings);
-        return bScore - aScore;
+        return bScore - aScore; // Higher score is better
       } else {
         const aScore = calculateValuesScore(a, rankings);
         const bScore = calculateValuesScore(b, rankings);
@@ -68,14 +67,37 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
     const weights = rankings.map((_, index) => rankings.length - index);
     
     rankings.forEach((metric, index) => {
+      const weight = weights[index];
+      
       switch (metric.id) {
         case 'livesSaved':
-          score += option.impact.livesSaved * weights[index];
+          // Higher is better for lives saved
+          score += option.impact.livesSaved * weight;
           break;
         case 'casualties':
-          score += (100 - option.impact.humanCasualties) * weights[index];
+          // Lower is better for casualties
+          score += (2000 - option.impact.humanCasualties) * weight;
           break;
-        // Add other metrics...
+        case 'resources':
+          // Lower resource consumption is better
+          score += (100 + option.impact.firefightingResource) * weight;
+          break;
+        case 'infrastructure':
+          // Lower infrastructure damage is better
+          score += (100 + option.impact.infrastructureCondition) * weight;
+          break;
+        case 'biodiversity':
+          // Lower biodiversity impact is better
+          score += (100 + option.impact.biodiversityCondition) * weight;
+          break;
+        case 'properties':
+          // Lower property damage is better
+          score += (100 + option.impact.propertiesCondition) * weight;
+          break;
+        case 'nuclear':
+          // Lower nuclear risk is better
+          score += (100 + option.impact.nuclearPowerStation) * weight;
+          break;
       }
     });
     return score;
