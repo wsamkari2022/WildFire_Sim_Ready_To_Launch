@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MoveVertical, AlertCircle, Scale, Zap, Leaf, Shield, Ban, Calculator, Brain } from 'lucide-react';
+import { ArrowLeft, MoveVertical, AlertCircle, Scale, Zap, Leaf, Shield, Ban, Calculator, Brain, ArrowRight } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { DecisionOption, MainScenario } from '../types';
 
@@ -133,6 +133,22 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
     setRankingItems(items);
   };
 
+  const handleContinue = () => {
+    if (!preferenceType || rankingItems.length === 0) return;
+
+    // Store the preference type flag
+    localStorage.setItem('preferenceTypeFlag', preferenceType === 'metrics' ? 'true' : 'false');
+
+    // Store the rankings based on preference type
+    if (preferenceType === 'metrics') {
+      localStorage.setItem('simulationMetricsRanking', JSON.stringify(rankingItems));
+    } else {
+      localStorage.setItem('moralValuesRanking', JSON.stringify(rankingItems));
+    }
+
+    onBack();
+  };
+
   const { comparisonTableColumnContent } = selectedOption;
 
   return (
@@ -246,6 +262,19 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
                 )}
               </Droppable>
             </DragDropContext>
+
+            <button
+              onClick={handleContinue}
+              disabled={!preferenceType}
+              className={`mt-6 w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-white font-medium transition-colors duration-200 ${
+                preferenceType
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Continue
+              <ArrowRight size={20} />
+            </button>
           </div>
         )}
       </div>
