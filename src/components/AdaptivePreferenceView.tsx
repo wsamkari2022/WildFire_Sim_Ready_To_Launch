@@ -89,6 +89,7 @@ interface AdaptivePreferenceViewProps {
   onBack: () => void;
   selectedOption: DecisionOption;
   mainScenario: MainScenario;
+  onConfirm: (option: DecisionOption) => void;
 }
 
 const simulationMetrics = [
@@ -112,7 +113,8 @@ const moralValues = [
 const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({ 
   onBack, 
   selectedOption,
-  mainScenario
+  mainScenario,
+  onConfirm
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [valueOrder, setValueOrder] = useState([
@@ -139,10 +141,8 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
   const handleContinue = () => {
     if (!preferenceType || rankingItems.length === 0) return;
 
-    // Store the preference type flag
     localStorage.setItem('preferenceTypeFlag', preferenceType === 'metrics' ? 'true' : 'false');
 
-    // Store the rankings based on preference type
     if (preferenceType === 'metrics') {
       localStorage.setItem('simulationMetricsRanking', JSON.stringify(rankingItems));
     } else {
@@ -157,10 +157,7 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
       <RankedOptionsView
         scenario={mainScenario}
         onBack={() => setShowRankedOptions(false)}
-        onConfirm={(option) => {
-          // Handle the confirmation here
-          onBack();
-        }}
+        onConfirm={onConfirm}
         currentMetrics={{
           livesSaved: 0,
           humanCasualties: 0,
@@ -211,7 +208,6 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
         />
       </div>
 
-      {/* Preference Alignment Focus Section */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Preference Alignment Focus

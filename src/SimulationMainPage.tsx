@@ -115,7 +115,6 @@ const SimulationMainPage: React.FC = () => {
       // The selected decision is already set
     } else {
       // User rejected their choice, show adaptive preference view
-      // Do not set selectedDecision to null here as AdaptivePreferenceView needs it
       setShowAdaptivePreference(true);
     }
   };
@@ -125,15 +124,17 @@ const SimulationMainPage: React.FC = () => {
     setShowAlternativesModal(false);
   };
 
-  const handleConfirmDecision = (decision: DecisionOptionType) => {
+  const handleConfirmDecision = () => {
+    if (!selectedDecision) return;
+
     const newMetrics = {
-      livesSaved: metrics.livesSaved + decision.impact.livesSaved,
-      humanCasualties: metrics.humanCasualties + decision.impact.humanCasualties,
-      firefightingResource: Math.max(0, metrics.firefightingResource + decision.impact.firefightingResource),
-      infrastructureCondition: Math.max(0, metrics.infrastructureCondition + decision.impact.infrastructureCondition),
-      biodiversityCondition: Math.max(0, metrics.biodiversityCondition + decision.impact.biodiversityCondition),
-      propertiesCondition: Math.max(0, metrics.propertiesCondition + decision.impact.propertiesCondition),
-      nuclearPowerStation: Math.max(0, metrics.nuclearPowerStation + decision.impact.nuclearPowerStation),
+      livesSaved: metrics.livesSaved + selectedDecision.impact.livesSaved,
+      humanCasualties: metrics.humanCasualties + selectedDecision.impact.humanCasualties,
+      firefightingResource: Math.max(0, metrics.firefightingResource + selectedDecision.impact.firefightingResource),
+      infrastructureCondition: Math.max(0, metrics.infrastructureCondition + selectedDecision.impact.infrastructureCondition),
+      biodiversityCondition: Math.max(0, metrics.biodiversityCondition + selectedDecision.impact.biodiversityCondition),
+      propertiesCondition: Math.max(0, metrics.propertiesCondition + selectedDecision.impact.propertiesCondition),
+      nuclearPowerStation: Math.max(0, metrics.nuclearPowerStation + selectedDecision.impact.nuclearPowerStation),
     };
 
     const changing = Object.keys(metrics).filter(
@@ -160,6 +161,11 @@ const SimulationMainPage: React.FC = () => {
 
     // Save current metrics to localStorage
     localStorage.setItem('currentMetrics', JSON.stringify(newMetrics));
+  };
+
+  const handleRankedOptionSelect = (option: DecisionOptionType) => {
+    setShowAdaptivePreference(false);
+    setSelectedDecision(option);
   };
 
   const handleToggleOption = useCallback((optionId: string) => {
@@ -257,9 +263,9 @@ const SimulationMainPage: React.FC = () => {
     return (
       <AdaptivePreferenceView 
         onBack={() => setShowAdaptivePreference(false)}
-        selectedOption={selectedDecision}
+        selectedOption={selectedDecision!}
         mainScenario={currentScenario}
-        onConfirm={handleConfirmDecision}
+        onConfirm={handleRankedOptionSelect}
       />
     );
   }
@@ -351,7 +357,7 @@ const SimulationMainPage: React.FC = () => {
               </div>
               
               <button
-                onClick={() => handleConfirmDecision(selectedDecision)}
+                onClick={handleConfirmDecision}
                 className="mt-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200"
               >
                 <Check size={16} className="mr-1" />
@@ -397,7 +403,7 @@ const SimulationMainPage: React.FC = () => {
       {isTransitioning && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 animate-pulse">
           <div className="text-center">
-            <Flame className="mx-auto text-orange-500 mb-4\" size={48} />
+            <Flame className="mx-auto text-orange-500 mb-4" size={48} />
             <h2 className="text-white text-2xl font-bold mb-2">Scenario Complete</h2>
             <p className="text-gray-300">Preparing next challenge...</p>
           </div>

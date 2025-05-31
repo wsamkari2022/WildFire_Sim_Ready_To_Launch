@@ -59,7 +59,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
     const sortedOptions = [...scenario.options].sort((a, b) => {
       if (preferenceType === 'true') {
-        // For metrics-based sorting
         const metricConfig = metricButtons.find(m => m.id === rankings[0]?.id);
         if (!metricConfig) return 0;
 
@@ -99,7 +98,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
         return metricConfig.higherIsBetter ? bValue - aValue : aValue - bValue;
       } else {
-        // For values-based sorting
         const aScore = calculateValuesScore(a, rankings);
         const bScore = calculateValuesScore(b, rankings);
         return bScore - aScore;
@@ -111,7 +109,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
   useEffect(() => {
     if (selectedOption) {
-      // Calculate preview metrics based on the currently selected option
       const newMetrics = {
         livesSaved: currentMetrics.livesSaved + selectedOption.impact.livesSaved,
         humanCasualties: currentMetrics.humanCasualties + selectedOption.impact.humanCasualties,
@@ -162,7 +159,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
   const handleConfirm = () => {
     if (selectedOption) {
-      // Pass the selected option to the parent component for processing
       onConfirm(selectedOption);
     }
   };
@@ -188,7 +184,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
             <p className="text-blue-800">{preferenceMessage}</p>
           </div>
 
-          {/* Metric Buttons */}
           <div className="flex flex-wrap gap-2 mb-6">
             {metricButtons.map((metric) => {
               const Icon = metric.icon;
@@ -239,10 +234,10 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
           {selectedOption && (
             <button
               onClick={handleConfirm}
-              className="mt-6 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200"
+              className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200"
             >
               <Check size={16} className="mr-1" />
-              Confirm Decision
+              Select Option
             </button>
           )}
         </div>
