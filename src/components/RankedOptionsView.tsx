@@ -111,7 +111,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
   useEffect(() => {
     if (selectedOption) {
-      // Calculate preview metrics when an option is selected
+      // Calculate preview metrics based on the currently selected option
       const newMetrics = {
         livesSaved: currentMetrics.livesSaved + selectedOption.impact.livesSaved,
         humanCasualties: currentMetrics.humanCasualties + selectedOption.impact.humanCasualties,
@@ -162,10 +162,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
   const handleConfirm = () => {
     if (selectedOption) {
-      // Update metrics in localStorage
-      localStorage.setItem('currentMetrics', JSON.stringify(previewMetrics));
-      
-      // Call onConfirm with the selected option to update parent component
+      // Pass the selected option to the parent component for processing
       onConfirm(selectedOption);
     }
   };
