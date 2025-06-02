@@ -4,16 +4,17 @@ import { DecisionOption } from '../types';
 
 /**
  * Props interface for the RankedOptionsView component
+ * Defines the required properties for rendering ranked decision options
  */
 interface RankedOptionsViewProps {
   scenario: {
-    title: string;
-    description: string;
-    options: DecisionOption[];
+    title: string;          // Title of the current scenario
+    description: string;    // Detailed scenario description
+    options: DecisionOption[]; // Available decision options
   };
-  onBack: () => void;
-  onConfirm: (option: DecisionOption) => void;
-  currentMetrics: {
+  onBack: () => void;      // Handler for navigation back
+  onConfirm: (option: DecisionOption) => void; // Handler for option confirmation
+  currentMetrics: {        // Current state of simulation metrics
     livesSaved: number;
     humanCasualties: number;
     firefightingResource: number;
@@ -26,7 +27,8 @@ interface RankedOptionsViewProps {
 
 /**
  * Configuration for metric buttons
- * Defines the visual and behavioral properties of each metric
+ * Defines the visual and behavioral properties of each metric button
+ * Used for consistent metric representation and sorting
  */
 const metricButtons = [
   { id: 'livesSaved', label: 'Lives Saved', icon: Users, color: 'text-green-600', higherIsBetter: true },
@@ -38,6 +40,21 @@ const metricButtons = [
   { id: 'nuclear', label: 'Nuclear', icon: Factory, color: 'text-purple-600', higherIsBetter: false }
 ];
 
+/**
+ * RankedOptionsView Component
+ * 
+ * Displays and manages decision options ranked according to user preferences.
+ * Features:
+ * 1. Loads and applies user preferences from localStorage
+ * 2. Ranks options based on metric or value priorities
+ * 3. Provides metric-specific filtering and comparison
+ * 4. Shows impact preview for selected options
+ * 
+ * @localStorage preferenceTypeFlag - Determines ranking type (metrics/values)
+ * @localStorage simulationMetricsRanking - User's metric priority order
+ * @localStorage moralValuesRanking - User's moral value priority order
+ * @localStorage currentMetrics - Current simulation state metrics
+ */
 const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
   scenario,
   onBack,
