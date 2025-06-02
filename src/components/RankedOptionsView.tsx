@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Check, Users, Skull, Droplets, Building, Trees as Tree, Factory } from 'lucide-react';
 import { DecisionOption } from '../types';
 
-/**
- * Props interface for the RankedOptionsView component
- */
 interface RankedOptionsViewProps {
   scenario: {
     id: number;
@@ -25,10 +22,6 @@ interface RankedOptionsViewProps {
   };
 }
 
-/**
- * Configuration for metric buttons
- * Defines the visual and behavioral properties of each metric
- */
 const metricButtons = [
   { id: 'livesSaved', label: 'Lives Saved', icon: Users, color: 'text-green-600', higherIsBetter: true },
   { id: 'casualties', label: 'Casualties', icon: Skull, color: 'text-red-600', higherIsBetter: false },
@@ -52,68 +45,56 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
   const [previewMetrics, setPreviewMetrics] = useState(currentMetrics);
 
   useEffect(() => {
-    // Only apply special ranking logic for scenarios 2 and 3
+    const preferenceType = localStorage.getItem('preferenceTypeFlag');
+    const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
+    const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
+    
     if (scenario.id > 1) {
-      const preferenceType = localStorage.getItem('preferenceTypeFlag');
-      const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
-      const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
-
-      if (preferenceType === 'true') {
-        // Metrics-based ranking
+      if (preferenceType === 'true' && metricsRanking.length > 0) {
         const topMetric = metricsRanking[0];
-        let sortedOptions = [...scenario.options];
+        const sortedOptions = [...scenario.options].sort((a, b) => {
+          const getMetricValue = (option: DecisionOption) => {
+            switch (topMetric.id) {
+              case 'livesSaved':
+                return option.impact.livesSaved * (topMetric.higherIsBetter ? 1 : -1);
+              case 'casualties':
+                return option.impact.humanCasualties;
+              case 'resources':
+                return Math.abs(option.impact.firefightingResource);
+              case 'infrastructure':
+                return Math.abs(option.impact.infrastructureCondition);
+              case 'biodiversity':
+                return Math.abs(option.impact.biodiversityCondition);
+              case 'properties':
+                return Math.abs(option.impact.propertiesCondition);
+              case 'nuclear':
+                return Math.abs(option.impact.nuclearPowerStation);
+              default:
+                return 0;
+            }
+          };
+          return getMetricValue(a) - getMetricValue(b);
+        });
 
-        // Sort based on the impact of the top metric
-        switch (topMetric?.id) {
-          case 'resources':
-            sortedOptions.sort((a, b) => Math.abs(a.impact.firefightingResource) - Math.abs(b.impact.firefightingResource));
-            break;
-          case 'infrastructure':
-            sortedOptions.sort((a, b) => Math.abs(a.impact.infrastructureCondition) - Math.abs(b.impact.infrastructureCondition));
-            break;
-          case 'biodiversity':
-            sortedOptions.sort((a, b) => Math.abs(a.impact.biodiversityCondition) - Math.abs(b.impact.biodiversityCondition));
-            break;
-          case 'properties':
-            sortedOptions.sort((a, b) => Math.abs(a.impact.propertiesCondition) - Math.abs(b.impact.propertiesCondition));
-            break;
-          case 'nuclear':
-            sortedOptions.sort((a, b) => Math.abs(a.impact.nuclearPowerStation) - Math.abs(b.impact.nuclearPowerStation));
-            break;
-          case 'casualties':
-            sortedOptions.sort((a, b) => a.impact.humanCasualties - b.impact.humanCasualties);
-            break;
-          case 'livesSaved':
-            sortedOptions.sort((a, b) => b.impact.livesSaved - a.impact.livesSaved);
-            break;
-          default:
-            break;
-        }
-
-        setPreferenceMessage(`Because you selected '${topMetric?.label}' as your highest priority in the previous simulation, the top two options are ranked accordingly.`);
+        setPreferenceMessage(`Because you selected '${topMetric.label}' as your highest priority in the previous simulation, the top two options are ranked accordingly.`);
         setRankedOptions(sortedOptions);
-      } else {
-        // Values-based ranking
-        const topValues = valuesRanking.slice(0, 2).map((v: any) => v.label.toLowerCase());
+      } else if (preferenceType === 'false' && valuesRanking.length > 0) {
+        const topValues = valuesRanking.slice(0, 2);
         const matchingOptions = scenario.options.filter(option => 
-          topValues.includes(option.label.toLowerCase())
+          topValues.some(value => value.id.toLowerCase() === option.label.toLowerCase())
         );
         const otherOptions = scenario.options.filter(option => 
-          !topValues.includes(option.label.toLowerCase())
+          !topValues.some(value => value.id.toLowerCase() === option.label.toLowerCase())
         );
 
-        setPreferenceMessage(`Because you selected '${valuesRanking[0]?.label}' and '${valuesRanking[1]?.label}' as your highest moral priorities in the previous simulation, the top two options are ranked accordingly.`);
+        const valueLabels = topValues.map(v => v.label).join("' and '");
+        setPreferenceMessage(`Because you selected '${valueLabels}' as your highest moral priorities in the previous simulation, the top two options are ranked accordingly.`);
         setRankedOptions([...matchingOptions, ...otherOptions]);
       }
     } else {
-      // Original ranking logic for scenario 1
-      const preferenceType = localStorage.getItem('preferenceTypeFlag');
-      const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
-      const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
-      
+      // Original behavior for Scenario 1
       const rankings = preferenceType === 'true' ? metricsRanking : valuesRanking;
-      const topPriorities = rankings.slice(0, 3).map((r: any) => r.label).join(', ');
-      
+      const topPriorities = rankings.slice(0, 3).map(r => r.label).join(', ');
       setPreferenceMessage(
         preferenceType === 'true'
           ? `Based on your simulation metrics priorities (${topPriorities}), the following options are ranked according to their impact on these key metrics:`
@@ -216,7 +197,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
                 className={`p-4 rounded-lg border transition-all duration-200 cursor-pointer ${
                   selectedOption?.id === option.id
                     ? 'border-blue-500 bg-blue-50'
-                    : index < 2 
+                    : index < 2 && scenario.id > 1
                       ? 'border-green-200 hover:border-blue-300 hover:bg-blue-50'
                       : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                 }`}
