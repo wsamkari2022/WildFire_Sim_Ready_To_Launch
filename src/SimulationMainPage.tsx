@@ -429,5 +429,3 @@ const SimulationMainPage: React.FC = () => {
 };
 
 export default SimulationMainPage;
-
-export default SimulationMainPage
