@@ -10,7 +10,7 @@ const ExpertAnalysis: React.FC<ExpertAnalysisProps> = ({ decision }) => {
   const getRecommendationIcon = (recommendation: "Accept" | "Reject" | "Neutral") => {
     switch (recommendation) {
       case "Accept":
-        return <ThumbsUp className="text-green-500" size={14} />;
+        return <ThumbsUp className="text-green-500\" size={14} />;
       case "Reject":
         return <ThumbsDown className="text-red-500" size={14} />;
       case "Neutral":
@@ -36,7 +36,7 @@ const ExpertAnalysis: React.FC<ExpertAnalysisProps> = ({ decision }) => {
   const getExpertIcon = (expertType: string) => {
     switch (expertType) {
       case 'safety':
-        return <Shield className="text-red-500" size={14} />;
+        return <Shield className="text-red-500\" size={14} />;
       case 'efficiency':
         return <Zap className="text-yellow-500" size={14} />;
       case 'sustainability':
