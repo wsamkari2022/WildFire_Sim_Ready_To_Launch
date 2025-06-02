@@ -27,6 +27,7 @@ const defaultMetrics: SimulationMetrics = {
 const SimulationMainPage: React.FC = () => {
   // Core simulation metrics
   const [metrics, setMetrics] = useState<SimulationMetrics>(defaultMetrics);
+  const [topStableValues, setTopStableValues] = useState<string[]>([]);
   const [animatingMetrics, setAnimatingMetrics] = useState<string[]>([]);
   const [selectedDecision, setSelectedDecision] = useState<DecisionOptionType | null>(null);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
@@ -38,71 +39,37 @@ const SimulationMainPage: React.FC = () => {
   const [toggledOptions, setToggledOptions] = useState<{[key: string]: boolean}>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionMessage, setTransitionMessage] = useState<string | null>(null);
-  const [preferenceType, setPreferenceType] = useState<boolean | null>(null);
-  const [metricsRanking, setMetricsRanking] = useState<any[]>([]);
-  const [valuesRanking, setValuesRanking] = useState<any[]>([]);
 
   useEffect(() => {
-    // Load preference type and rankings
-    const prefType = localStorage.getItem('preferenceTypeFlag');
-    const metrics = localStorage.getItem('simulationMetricsRanking');
-    const values = localStorage.getItem('moralValuesRanking');
-
-    setPreferenceType(prefType === 'true');
-    if (metrics) setMetricsRanking(JSON.parse(metrics));
-    if (values) setValuesRanking(JSON.parse(values));
+    // Clear any previously stored metrics
+    localStorage.removeItem('currentMetrics');
+    
+    const savedValues = localStorage.getItem('finalValues');
+    if (savedValues) {
+      try {
+        const values = JSON.parse(savedValues);
+        const stableValues = values
+          .slice(0, 2)
+          .map((v: { name: string }) => v.name.toLowerCase());
+        
+        setTopStableValues(stableValues);
+      } catch (error) {
+        console.error('Error parsing matched stable values:', error);
+      }
+    }
   }, []);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
   const getInitialOptions = useCallback(() => {
-    if (!currentScenario) return [];
+    if (!currentScenario || !topStableValues.length) return currentScenario.options.slice(0, 2);
     
-    // Get user preference type and rankings
-    const isMetricBased = preferenceType;
-    const currentRanking = isMetricBased ? metricsRanking : valuesRanking;
-    
-    if (!currentRanking || currentRanking.length === 0) {
-      return currentScenario.options.slice(0, 2);
-    }
+    const matchingOptions = currentScenario.options.filter(option => 
+      topStableValues.includes(option.label.toLowerCase())
+    );
 
-    // Sort options based on ranking
-    const sortedOptions = [...currentScenario.options].sort((a, b) => {
-      if (isMetricBased) {
-        // Sort by metrics priority
-        const topMetric = currentRanking[0]?.id;
-        switch (topMetric) {
-          case 'livesSaved':
-            return b.impact.livesSaved - a.impact.livesSaved;
-          case 'casualties':
-            return a.impact.humanCasualties - b.impact.humanCasualties;
-          case 'resources':
-            return Math.abs(a.impact.firefightingResource) - Math.abs(b.impact.firefightingResource);
-          case 'infrastructure':
-            return Math.abs(a.impact.infrastructureCondition) - Math.abs(b.impact.infrastructureCondition);
-          case 'biodiversity':
-            return Math.abs(a.impact.biodiversityCondition) - Math.abs(b.impact.biodiversityCondition);
-          case 'properties':
-            return Math.abs(a.impact.propertiesCondition) - Math.abs(b.impact.propertiesCondition);
-          case 'nuclear':
-            return Math.abs(a.impact.nuclearPowerStation) - Math.abs(b.impact.nuclearPowerStation);
-          default:
-            return 0;
-        }
-      } else {
-        // Sort by moral values priority
-        const topValue = currentRanking[0]?.id;
-        const aValue = a.label.toLowerCase();
-        const bValue = b.label.toLowerCase();
-        
-        if (aValue === topValue && bValue !== topValue) return -1;
-        if (bValue === topValue && aValue !== topValue) return 1;
-        return 0;
-      }
-    });
-
-    return sortedOptions.slice(0, 2);
-  }, [currentScenario, preferenceType, metricsRanking, valuesRanking]);
+    return matchingOptions.length >= 2 ? matchingOptions.slice(0, 2) : currentScenario.options.slice(0, 2);
+  }, [currentScenario, topStableValues]);
 
   const getAlternativeOptions = useCallback(() => {
     if (!currentScenario) return [];
