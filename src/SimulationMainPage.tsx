@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Flame, Check, BarChart2, Lightbulb, X } from 'lucide-react';
+import { Flame, Check, BarChart2, Lightbulb, X, AlertTriangle } from 'lucide-react';
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import MetricsDisplay from './components/MetricsDisplay';
 import DecisionOption from './components/DecisionOption';
@@ -38,6 +38,7 @@ const SimulationMainPage: React.FC = () => {
   const [addedAlternatives, setAddedAlternatives] = useState<DecisionOptionType[]>([]);
   const [toggledOptions, setToggledOptions] = useState<{[key: string]: boolean}>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionMessage, setTransitionMessage] = useState<string | null>(null);
 
   useEffect(() => {
     // Clear any previously stored metrics
@@ -144,14 +145,26 @@ const SimulationMainPage: React.FC = () => {
     
     if (currentScenarioIndex < scenarios.length - 1) {
       setIsTransitioning(true);
+      
+      // Set appropriate transition message based on metrics
+      let message = "";
+      if (newMetrics.nuclearPowerStation < 50) {
+        message = "⚠️ CRITICAL: Nuclear facility integrity compromised. Situation escalating - immediate action required!";
+      } else if (newMetrics.firefightingResource < 30) {
+        message = "⚠️ WARNING: Resources critically low. New threats emerging - strategic decisions vital!";
+      } else {
+        message = "Scenario complete. Preparing for escalating situation...";
+      }
+      setTransitionMessage(message);
+
       setTimeout(() => {
         setIsTransitioning(false);
+        setTransitionMessage(null);
         setCurrentScenarioIndex(prev => prev + 1);
         setAddedAlternatives([]);
-      }, 1500);
+      }, 3000);
     }
 
-    // Save current metrics to localStorage
     localStorage.setItem('currentMetrics', JSON.stringify(newMetrics));
   };
 
@@ -393,11 +406,21 @@ const SimulationMainPage: React.FC = () => {
       )}
 
       {isTransitioning && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 animate-pulse">
-          <div className="text-center">
-            <Flame className="mx-auto text-orange-500 mb-4\" size={48} />
-            <h2 className="text-white text-2xl font-bold mb-2">Scenario Complete</h2>
-            <p className="text-gray-300">Preparing next challenge...</p>
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="text-center max-w-lg mx-auto p-6">
+            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse\" size={48} />
+            <h2 className="text-white text-2xl font-bold mb-4">
+              {transitionMessage || "Scenario Complete"}
+            </h2>
+            {metrics.nuclearPowerStation < 50 && (
+              <div className="bg-red-900 bg-opacity-50 p-4 rounded-lg mb-4 flex items-center gap-2">
+                <AlertTriangle className="text-red-500" size={24} />
+                <p className="text-red-200">Nuclear containment breach detected. Emergency protocols activated.</p>
+              </div>
+            )}
+            <p className="text-gray-300 animate-pulse">
+              Analyzing situation developments...
+            </p>
           </div>
         </div>
       )}
@@ -406,3 +429,5 @@ const SimulationMainPage: React.FC = () => {
 };
 
 export default SimulationMainPage;
+
+export default SimulationMainPage
