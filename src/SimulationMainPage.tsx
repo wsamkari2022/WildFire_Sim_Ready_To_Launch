@@ -493,7 +493,7 @@ const SimulationMainPage: React.FC = () => {
       {isTransitioning && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="text-center max-w-lg mx-auto p-6">
-            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse" size={48} />
+            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse\" size={48} />
             <h2 className="text-white text-2xl font-bold mb-4">
               {transitionMessage || "Scenario Complete"}
             </h2>
