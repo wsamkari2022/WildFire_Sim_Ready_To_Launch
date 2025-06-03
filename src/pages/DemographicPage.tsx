@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserCircle, ArrowRight } from 'lucide-react';
 
@@ -9,6 +9,11 @@ const DemographicPage: React.FC = () => {
     id: ''
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Reset rankedViewAccessed flag when demographics page loads
+    localStorage.setItem('rankedViewAccessed', 'false');
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
