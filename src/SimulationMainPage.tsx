@@ -24,17 +24,6 @@ const defaultMetrics: SimulationMetrics = {
   nuclearPowerStation: 100,
 };
 
-// Metric configuration for sorting options
-const metricButtons = [
-  { id: 'livesSaved', label: 'Lives Saved', higherIsBetter: true },
-  { id: 'casualties', label: 'Casualties', higherIsBetter: false },
-  { id: 'resources', label: 'Resources', higherIsBetter: false },
-  { id: 'infrastructure', label: 'Infrastructure', higherIsBetter: false },
-  { id: 'biodiversity', label: 'Biodiversity', higherIsBetter: false },
-  { id: 'properties', label: 'Properties', higherIsBetter: false },
-  { id: 'nuclear', label: 'Nuclear', higherIsBetter: false }
-];
-
 const SimulationMainPage: React.FC = () => {
   const [metrics, setMetrics] = useState<SimulationMetrics>(defaultMetrics);
   const [topStableValues, setTopStableValues] = useState<string[]>([]);
@@ -57,16 +46,15 @@ const SimulationMainPage: React.FC = () => {
     if (currentScenarioIndex > 0 && preferenceType && preferenceType !== '0') {
       if (preferenceType === '1') {
         const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
-        const topMetric = metricsRanking[0]?.label;
+        const topMetrics = metricsRanking.slice(0, 2).map((m: any) => m.label).join(' and ');
         setPriorityMessage(
-          `Because you selected '${topMetric}' as your highest priority in the previous simulation, the top two options are ranked accordingly.`
+          `Based on your simulation metrics priorities (${topMetrics}), the following options are ranked accordingly:`
         );
       } else if (preferenceType === '2') {
         const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
-        const value1 = valuesRanking[0]?.label;
-        const value2 = valuesRanking[1]?.label;
+        const topValues = valuesRanking.slice(0, 2).map((v: any) => v.label).join(' and ');
         setPriorityMessage(
-          `Because you selected '${value1}' and '${value2}' as your highest moral priorities in the previous simulation, the top two options are ranked accordingly.`
+          `Based on your moral values priorities (${topValues}), the following options are ranked accordingly:`
         );
       }
     } else {
@@ -98,57 +86,46 @@ const SimulationMainPage: React.FC = () => {
     
     const preferenceType = localStorage.getItem('preferenceTypeFlag');
     
-    // For Scenario 1 or when preferenceType is '0'/null/undefined
-    if (currentScenarioIndex === 0 || !preferenceType || preferenceType === '0') {
+    // If no preference type is set or it's '0', use topStableValues for all scenarios
+    if (!preferenceType || preferenceType === '0') {
       if (!topStableValues.length) return currentScenario.options.slice(0, 2);
+      
       const matchingOptions = currentScenario.options.filter(option => 
         topStableValues.includes(option.label.toLowerCase())
       );
+      
       return matchingOptions.length >= 2 ? matchingOptions.slice(0, 2) : currentScenario.options.slice(0, 2);
     }
-
-    // Simulation Metrics Priority
+    
+    // If user has set preferences through RankedOptionsView
     if (preferenceType === '1') {
       const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
-      const topMetric = metricsRanking[0]?.id;
+      const topMetric = metricsRanking[0];
+      
       if (!topMetric) return currentScenario.options.slice(0, 2);
-
-      const metricConfig = metricButtons.find(m => m.id === topMetric);
-      const sortedOptions = [...currentScenario.options].sort((a, b) => {
-        const getMetricValue = (option: DecisionOptionType) => {
-          switch (topMetric) {
-            case 'livesSaved': return option.impact.livesSaved;
-            case 'casualties': return option.impact.humanCasualties;
-            case 'resources': return Math.abs(option.impact.firefightingResource);
-            case 'infrastructure': return Math.abs(option.impact.infrastructureCondition);
-            case 'biodiversity': return Math.abs(option.impact.biodiversityCondition);
-            case 'properties': return Math.abs(option.impact.propertiesCondition);
-            case 'nuclear': return Math.abs(option.impact.nuclearPowerStation);
-            default: return 0;
-          }
-        };
-
-        const aValue = getMetricValue(a);
-        const bValue = getMetricValue(b);
-        return metricConfig?.higherIsBetter ? bValue - aValue : aValue - bValue;
-      });
-
-      return sortedOptions.slice(0, 2);
+      
+      return currentScenario.options
+        .sort((a, b) => {
+          const aValue = a.impact[topMetric.id as keyof typeof a.impact] || 0;
+          const bValue = b.impact[topMetric.id as keyof typeof b.impact] || 0;
+          return topMetric.higherIsBetter ? bValue - aValue : aValue - bValue;
+        })
+        .slice(0, 2);
     }
     
-    // Moral Values Priority
     if (preferenceType === '2') {
       const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
       const topValues = valuesRanking.slice(0, 2).map(v => v.id.toLowerCase());
+      
       const matchingOptions = currentScenario.options.filter(option => 
         topValues.includes(option.label.toLowerCase())
       );
+      
       return matchingOptions.length >= 2 ? matchingOptions.slice(0, 2) : currentScenario.options.slice(0, 2);
     }
-
-    // Fallback to default behavior
+    
     return currentScenario.options.slice(0, 2);
-  }, [currentScenario, currentScenarioIndex, topStableValues]);
+  }, [currentScenario, topStableValues]);
 
   const getAlternativeOptions = useCallback(() => {
     if (!currentScenario) return [];
@@ -225,7 +202,6 @@ const SimulationMainPage: React.FC = () => {
     if (currentScenarioIndex < scenarios.length - 1) {
       setIsTransitioning(true);
       
-      // Set appropriate transition message based on metrics
       let message = "";
       if (newMetrics.nuclearPowerStation < 50) {
         message = "⚠️ CRITICAL: Nuclear facility integrity compromised. Situation escalating - immediate action required!";
@@ -493,7 +469,7 @@ const SimulationMainPage: React.FC = () => {
       {isTransitioning && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="text-center max-w-lg mx-auto p-6">
-            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse\" size={48} />
+            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse" size={48} />
             <h2 className="text-white text-2xl font-bold mb-4">
               {transitionMessage || "Scenario Complete"}
             </h2>
