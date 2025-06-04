@@ -12,7 +12,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/demographics" replace />} />
+        <Route path="/" element={<Navigate to="/demographics\" replace />} />
         <Route path="/demographics" element={<DemographicPage />} />
         <Route path="/explicitvaluepage" element={<ExplicitValuesPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
