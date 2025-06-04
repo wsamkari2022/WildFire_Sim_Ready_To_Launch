@@ -235,7 +235,7 @@ const FinalAnalysisPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+          <AlertTriangle className="mx-auto text-red-500 mb-4\" size={48} />
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Data Not Found</h2>
           <p className="text-gray-600 text-center mb-6">
             Please complete the simulation before accessing the final analysis.
