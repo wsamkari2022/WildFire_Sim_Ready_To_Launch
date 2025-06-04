@@ -50,12 +50,6 @@ interface ValueCount {
   [key: string]: number;
 }
 
-interface ValueTrend {
-  [key: string]: number[];
-}
-
-const MORAL_VALUES = ['Safety', 'Efficiency', 'Sustainability', 'Fairness', 'Nonmaleficence'];
-
 const FinalAnalysisPage: React.FC = () => {
   const navigate = useNavigate();
   const [explicitValueCounts, setExplicitValueCounts] = useState<ValueCount>({});
@@ -64,26 +58,20 @@ const FinalAnalysisPage: React.FC = () => {
   const [finalMetrics, setFinalMetrics] = useState<SimulationMetrics | null>(null);
   const [overallStabilityScore, setOverallStabilityScore] = useState<number>(0);
   const [showError, setShowError] = useState(false);
-  const [valueTrends, setValueTrends] = useState<ValueTrend>({});
+  const [consistencyTrend, setConsistencyTrend] = useState<number[]>([]);
 
   useEffect(() => {
     try {
       // Load all required data
       const explicitValues = JSON.parse(localStorage.getItem('explicitValues') || '[]');
-      const implicitValues = JSON.parse(localStorage.getItem('deepValues') || '[]');
+      const deepValues = JSON.parse(localStorage.getItem('deepValues') || '[]');
       const simulationOutcomes = JSON.parse(localStorage.getItem('simulationScenarioOutcomes') || '[]');
       const metrics = JSON.parse(localStorage.getItem('finalSimulationMetrics') || 'null');
 
-      if (!explicitValues.length || !implicitValues.length || !simulationOutcomes.length || !metrics) {
+      if (!explicitValues.length || !deepValues.length || !simulationOutcomes.length || !metrics) {
         setShowError(true);
         return;
       }
-
-      // Initialize value trends
-      const trends: ValueTrend = {};
-      MORAL_VALUES.forEach(value => {
-        trends[value.toLowerCase()] = [];
-      });
 
       // Process explicit values
       const explicitCounts: ValueCount = {};
@@ -95,47 +83,20 @@ const FinalAnalysisPage: React.FC = () => {
 
       // Process implicit values
       const implicitCounts: ValueCount = {};
-      implicitValues.forEach((value: any) => {
+      deepValues.forEach((value: any) => {
         const normalizedValue = value.name.toLowerCase();
         implicitCounts[normalizedValue] = (implicitCounts[normalizedValue] || 0) + 1;
       });
       setImplicitValueCounts(implicitCounts);
-
-      // Calculate consistency scores for each value at each scenario
-      simulationOutcomes.forEach((outcome: any) => {
-        MORAL_VALUES.forEach(value => {
-          const normalizedValue = value.toLowerCase();
-          const isSelected = outcome.decision.label.toLowerCase() === normalizedValue;
-          const matchesExplicit = explicitCounts[normalizedValue] > 0;
-          const matchesImplicit = implicitCounts[normalizedValue] > 0;
-          
-          let consistencyScore = 0;
-          if (isSelected) {
-            consistencyScore = (
-              (matchesExplicit ? 40 : 0) +
-              (matchesImplicit ? 60 : 0)
-            );
-          } else {
-            // For non-selected values, calculate inverse consistency
-            consistencyScore = (
-              (!matchesExplicit ? 40 : 0) +
-              (!matchesImplicit ? 60 : 0)
-            );
-          }
-          
-          trends[normalizedValue].push(consistencyScore);
-        });
-      });
-
-      setValueTrends(trends);
 
       // Process simulation outcomes and calculate matches
       const matches: ValueMatch[] = simulationOutcomes.map((outcome: any) => {
         const selectedValue = outcome.decision.label.toLowerCase();
         const matchesExplicit = Object.keys(explicitCounts).includes(selectedValue);
         const matchesImplicit = Object.keys(implicitCounts).includes(selectedValue);
-        const matchesSimulation = true;
+        const matchesSimulation = true; // Since this is from simulation outcomes
         
+        // Calculate stability score for this decision
         const stabilityScore = (
           (matchesExplicit ? 40 : 0) +
           (matchesImplicit ? 60 : 0)
@@ -152,9 +113,15 @@ const FinalAnalysisPage: React.FC = () => {
       });
 
       setValueMatches(matches);
-      setOverallStabilityScore(
-        matches.reduce((acc, match) => acc + match.stabilityScore, 0) / matches.length
-      );
+
+      // Calculate overall stability score
+      const avgStabilityScore = matches.reduce((acc, match) => acc + match.stabilityScore, 0) / matches.length;
+      setOverallStabilityScore(avgStabilityScore);
+
+      // Set consistency trend
+      setConsistencyTrend(matches.map(match => match.stabilityScore));
+
+      // Set final metrics
       setFinalMetrics(metrics);
 
     } catch (error) {
@@ -206,28 +173,15 @@ const FinalAnalysisPage: React.FC = () => {
   };
 
   const prepareConsistencyTrendData = () => {
-    const scenarios = valueMatches.map(match => `Scenario ${match.scenarioId}`);
-    
     return {
-      labels: scenarios,
-      datasets: MORAL_VALUES.map((value, index) => {
-        const colors = [
-          { line: 'rgb(239, 68, 68)', fill: 'rgba(239, 68, 68, 0.1)' },   // red
-          { line: 'rgb(59, 130, 246)', fill: 'rgba(59, 130, 246, 0.1)' }, // blue
-          { line: 'rgb(16, 185, 129)', fill: 'rgba(16, 185, 129, 0.1)' }, // green
-          { line: 'rgb(245, 158, 11)', fill: 'rgba(245, 158, 11, 0.1)' }, // amber
-          { line: 'rgb(139, 92, 246)', fill: 'rgba(139, 92, 246, 0.1)' }  // purple
-        ];
-
-        return {
-          label: value,
-          data: valueTrends[value.toLowerCase()],
-          borderColor: colors[index].line,
-          backgroundColor: colors[index].fill,
-          tension: 0.1,
-          fill: true
-        };
-      })
+      labels: valueMatches.map(match => `Scenario ${match.scenarioId}`),
+      datasets: [{
+        label: 'Value Consistency',
+        data: consistencyTrend,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+        tension: 0.1
+      }]
     };
   };
 
@@ -235,7 +189,7 @@ const FinalAnalysisPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-          <AlertTriangle className="mx-auto text-red-500 mb-4\" size={48} />
+          <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Data Not Found</h2>
           <p className="text-gray-600 text-center mb-6">
             Please complete the simulation before accessing the final analysis.
@@ -360,43 +314,24 @@ const FinalAnalysisPage: React.FC = () => {
                   },
                   plugins: {
                     legend: {
-                      position: 'bottom' as const,
-                      labels: {
-                        padding: 20,
-                        usePointStyle: true
-                      }
-                    },
-                    tooltip: {
-                      mode: 'index',
-                      intersect: false
+                      display: false
                     }
-                  },
-                  interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
                   }
                 }}
               />
             </div>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">High Consistency (75-100%)</h3>
-                <p className="text-xs text-gray-600">
-                  Values consistently align with explicit and implicit preferences
-                </p>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-sm text-gray-600">High Consistency (75-100%)</span>
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Medium Consistency (50-74%)</h3>
-                <p className="text-xs text-gray-600">
-                  Values show moderate alignment with stated preferences
-                </p>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                <span className="text-sm text-gray-600">Medium Consistency (50-74%)</span>
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Low Consistency (0-49%)</h3>
-                <p className="text-xs text-gray-600">
-                  Values demonstrate significant deviation from preferences
-                </p>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span className="text-sm text-gray-600">Low Consistency (0-49%)</span>
               </div>
             </div>
           </div>
