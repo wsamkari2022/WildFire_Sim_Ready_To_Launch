@@ -356,40 +356,65 @@ const FinalAnalysisPage: React.FC = () => {
             </div>
             <div className="h-[400px]">
               <Line
-                data={prepareConsistencyTrendData()}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      max: 100,
-                      title: {
-                        display: true,
-                        text: 'Consistency Score (%)'
-                      }
-                    }
-                  },
-                  plugins: {
-                    legend: {
-                      position: 'bottom' as const,
-                      labels: {
-                        padding: 20,
-                        usePointStyle: true
-                      }
-                    },
-                    tooltip: {
-                      mode: 'index',
-                      intersect: false
-                    }
-                  },
-                  interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                  }
-                }}
-              />
+  data={prepareConsistencyTrendData()}
+  options={{
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        title: {
+          display: true,
+          text: 'Consistency Score (%)'
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      },
+      x: {
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        titleColor: '#1f2937',
+        bodyColor: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12,
+        bodyFont: {
+          size: 12
+        },
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        }
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    }
+  }}
+/>
+
             </div>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
