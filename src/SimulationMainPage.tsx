@@ -48,6 +48,8 @@ const SimulationMainPage: React.FC = () => {
     decision: DecisionOptionType;
   }>>([]);
 
+  const currentScenario = scenarios[currentScenarioIndex];
+
   const getMostFrequentExplicitValues = (): string[] => {
     const savedExplicitValues = localStorage.getItem('explicitValues');
     if (!savedExplicitValues) return [];
@@ -125,8 +127,6 @@ const SimulationMainPage: React.FC = () => {
       }
     }
   }, [currentScenarioIndex, currentScenario, scenario1InitialOptions.length]);
-
-  const currentScenario = scenarios[currentScenarioIndex];
 
   const getInitialOptions = useCallback(() => {
     if (!currentScenario) return [];
