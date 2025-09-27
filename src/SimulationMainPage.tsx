@@ -246,7 +246,65 @@ const SimulationMainPage: React.FC = () => {
         }
       }
       
-      // Fallback to original logic if no reordered preferences
+      // Check what values are mentioned in the priority message
+      const preferenceType = localStorage.getItem('preferenceTypeFlag');
+      const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
+      const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
+      
+      if (hasAccessedRankedView) {
+        if (preferenceType === 'true') {
+          // Use simulation metrics ranking
+          const topMetric = metricsRanking[0]?.id;
+          if (topMetric) {
+            const sortedOptions = [...currentScenario.options].sort((a, b) => {
+              const getMetricValue = (option: DecisionOptionType) => {
+                switch (topMetric) {
+                  case 'livesSaved': return option.impact.livesSaved;
+                  case 'casualties': return option.impact.humanCasualties;
+                  case 'resources': return Math.abs(option.impact.firefightingResource);
+                  case 'infrastructure': return Math.abs(option.impact.infrastructureCondition);
+                  case 'biodiversity': return Math.abs(option.impact.biodiversityCondition);
+                  case 'properties': return Math.abs(option.impact.propertiesCondition);
+                  case 'nuclear': return Math.abs(option.impact.nuclearPowerStation);
+                  default: return 0;
+                }
+              };
+
+              const isHigherBetter = topMetric === 'livesSaved';
+              return isHigherBetter ? getMetricValue(b) - getMetricValue(a) : getMetricValue(a) - getMetricValue(b);
+            });
+            
+            return sortedOptions.slice(0, 2);
+          }
+        } else {
+          // Use moral values ranking - get the exact values mentioned in the message
+          const topValues = valuesRanking.slice(0, 2).map((v: any) => v.id.toLowerCase());
+          
+          // Find options that match these exact values
+          const matchingOptions = currentScenario.options.filter(option => 
+            topValues.includes(option.label.toLowerCase())
+          );
+          
+          // Sort matching options to maintain the order from valuesRanking
+          const sortedMatchingOptions = matchingOptions.sort((a, b) => {
+            const aIndex = topValues.indexOf(a.label.toLowerCase());
+            const bIndex = topValues.indexOf(b.label.toLowerCase());
+            return aIndex - bIndex;
+          });
+          
+          if (matchingOptions.length >= 2) {
+            return sortedMatchingOptions.slice(0, 2);
+          } else if (matchingOptions.length === 1) {
+            // If only one matching option, add the best remaining option
+            const remainingOptions = currentScenario.options.filter(option => 
+              !topValues.includes(option.label.toLowerCase())
+            );
+            return [sortedMatchingOptions[0], remainingOptions[0]];
+          }
+        }
+      }
+      
+      // Fallback to original matched stable values
       if (topStableValues.length > 0) {
         const matchingOptions = currentScenario.options.filter(option => 
           topStableValues.includes(option.label.toLowerCase())
