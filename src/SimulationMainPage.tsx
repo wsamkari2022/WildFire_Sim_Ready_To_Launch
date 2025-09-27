@@ -248,14 +248,6 @@ const SimulationMainPage: React.FC = () => {
         }
       }
       
-      if (moralValuesReorder) {
-        try {
-          const reorderedValues = JSON.parse(moralValuesReorder);
-          const topValues = reorderedValues.slice(0, 2).map((v: any) => v.id.toLowerCase());
-          
-          // Find options that match the top 2 reordered moral values
-          const matchingOptions = currentScenario.options.filter(option => 
-            topValues.includes(option.label.toLowerCase())
       // SECOND PRIORITY: Check what values are mentioned in the priority message
       const preferenceType = localStorage.getItem('preferenceTypeFlag');
       const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
