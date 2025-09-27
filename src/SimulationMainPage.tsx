@@ -248,6 +248,37 @@ const SimulationMainPage: React.FC = () => {
         }
       }
       
+      if (moralValuesReorder) {
+        try {
+          const reorderedValues = JSON.parse(moralValuesReorder);
+          const topValues = reorderedValues.slice(0, 2).map((v: any) => v.id.toLowerCase());
+          
+          // Find options that match the top 2 reordered moral values
+          const matchingOptions = currentScenario.options.filter(option => 
+            topValues.includes(option.label.toLowerCase())
+          );
+          
+          // Sort matching options to maintain the order from MoralValuesReorderList
+          const sortedMatchingOptions = matchingOptions.sort((a, b) => {
+            const aIndex = topValues.indexOf(a.label.toLowerCase());
+            const bIndex = topValues.indexOf(b.label.toLowerCase());
+            return aIndex - bIndex;
+          });
+          
+          if (sortedMatchingOptions.length >= 2) {
+            return sortedMatchingOptions.slice(0, 2);
+          } else if (sortedMatchingOptions.length === 1) {
+            // If only one matching option, add the best remaining option
+            const remainingOptions = currentScenario.options.filter(option => 
+              !topValues.includes(option.label.toLowerCase())
+            );
+            return [sortedMatchingOptions[0], remainingOptions[0]];
+          }
+        } catch (error) {
+          console.error('Error parsing MoralValuesReorderList:', error);
+        }
+      }
+      
       // SECOND PRIORITY: Check what values are mentioned in the priority message
       const preferenceType = localStorage.getItem('preferenceTypeFlag');
       const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
@@ -719,7 +750,7 @@ const SimulationMainPage: React.FC = () => {
       {isTransitioning && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="text-center max-w-lg mx-auto p-6">
-            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse\" size={48} />
+            <Flame className="mx-auto text-orange-500 mb-4 animate-pulse" size={48} />
             <h2 className="text-white text-2xl font-bold mb-4">
               {transitionMessage || "Scenario Complete"}
             </h2>
