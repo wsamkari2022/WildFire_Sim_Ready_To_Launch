@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserCircle, ArrowRight } from 'lucide-react';
+import { CircleUser as UserCircle, ArrowRight } from 'lucide-react';
 
 const DemographicPage: React.FC = () => {
   const navigate = useNavigate();
