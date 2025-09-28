@@ -381,8 +381,39 @@ const SimulationMainPage: React.FC = () => {
     setShowCVRModal(false);
     
     if (answer) {
-      // User confirmed their choice, proceed with the decision
-      // The selected decision is already set
+      // User confirmed their choice, update moral values reorder list
+      if (selectedDecision) {
+        const selectedValue = selectedDecision.label.toLowerCase();
+        
+        // Get current matched stable values
+        const savedMatchedValues = localStorage.getItem('finalValues');
+        let matchedStableValuesList: string[] = [];
+        
+        if (savedMatchedValues) {
+          try {
+            const parsedValues = JSON.parse(savedMatchedValues);
+            matchedStableValuesList = parsedValues.map((v: any) => ({
+              id: v.name.toLowerCase(),
+              label: v.name
+            }));
+          } catch (error) {
+            console.error('Error parsing matched stable values:', error);
+          }
+        }
+        
+        // Create new moral values reorder list with selected value at top
+        const newMoralValuesReorderList = [
+          { id: selectedValue, label: selectedDecision.label },
+          ...matchedStableValuesList.filter(v => v.id !== selectedValue)
+        ];
+        
+        // Save to localStorage
+        localStorage.setItem('MoralValuesReorderList', JSON.stringify(newMoralValuesReorderList));
+        
+        console.log('Updated MoralValuesReorderList:', newMoralValuesReorderList);
+      }
+      
+      // Proceed with the decision - the selected decision is already set
     } else {
       // User rejected their choice, show adaptive preference view
       setShowAdaptivePreference(true);
