@@ -896,18 +896,19 @@ const SimulationMainPage: React.FC = () => {
                   onClick={() => {
                     setShowReorderingWarning(false);
                     setCameFromAdaptivePreference(false);
-                    setShowExpertModal(false);
-                    setShowDecisionSummary(false);
+                    setShowDecisionSummary(false); // Close decision summary
                     setHasExploredAlternatives(true);
                     setShowAlternativesModal(true);
-                    setTempSelectedOption(null);
                   }}
                   className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
                 >
                   Review Alternatives Anyway
                 </button>
                 <button
-                  onClick={() => setShowReorderingWarning(false)}
+                  onClick={() => {
+                    setShowReorderingWarning(false);
+                    // Keep the decision summary open and maintain the flag
+                  }}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
                 >
                   Keep My Current Choice
