@@ -53,8 +53,6 @@ const SimulationMainPage: React.FC = () => {
   }>>([]);
   const [matchedStableValues, setMatchedStableValues] = useState<string[]>([]);
   const [hasExploredAlternatives, setHasExploredAlternatives] = useState(false);
-  const [showReorderingWarning, setShowReorderingWarning] = useState(false);
-  const [cameFromAdaptivePreference, setCameFromAdaptivePreference] = useState(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -606,7 +604,6 @@ const SimulationMainPage: React.FC = () => {
 
   const handleRankedOptionSelect = (option: DecisionOptionType) => {
     setShowAdaptivePreference(false);
-    setCameFromAdaptivePreference(true); // Mark that user came from adaptive preference
     setSelectedDecision(option);
     setShowDecisionSummary(true);
   };
@@ -860,63 +857,6 @@ const SimulationMainPage: React.FC = () => {
           question={selectedDecision.cvrQuestion}
           onAnswer={handleCVRAnswer}
         />
-      )}
-
-      {/* Value Reordering Warning Modal */}
-      {showReorderingWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Value Reordering Alert</h3>
-                  <p className="text-sm text-gray-600">Important decision ahead</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-gray-700 leading-relaxed">
-                  You've just reordered your moral values and selected an option based on your new preferences. 
-                  If you review alternatives now, you might select a different option that doesn't align with 
-                  your recent value reordering, which could affect future scenario recommendations.
-                </p>
-                <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                  <p className="text-sm text-blue-800">
-                    <strong>Recommendation:</strong> Consider keeping your current choice to maintain consistency 
-                    with your updated value preferences.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowReorderingWarning(false);
-                    setCameFromAdaptivePreference(false);
-                    setShowDecisionSummary(false); // Close decision summary
-                    setHasExploredAlternatives(true);
-                    setShowAlternativesModal(true);
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
-                >
-                  Review Alternatives Anyway
-                </button>
-                <button
-                  onClick={() => {
-                    setShowReorderingWarning(false);
-                    // Keep the decision summary open and maintain the flag
-                  }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
-                >
-                  Keep My Current Choice
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {isTransitioning && (
