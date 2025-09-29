@@ -749,6 +749,7 @@ const SimulationMainPage: React.FC = () => {
         option={selectedDecision!}
         onConfirmDecision={handleConfirmDecision}
         canConfirm={hasExploredAlternatives}
+        onReviewAlternatives={handleExploreAlternatives}
       />
 
       <RadarChart

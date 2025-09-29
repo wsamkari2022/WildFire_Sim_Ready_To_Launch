@@ -8,6 +8,7 @@ interface DecisionSummaryModalProps {
   option: DecisionOption;
   onConfirmDecision: () => void;
   canConfirm: boolean;
+  onReviewAlternatives: () => void;
 }
 
 const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
@@ -15,7 +16,8 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
   onClose,
   option,
   onConfirmDecision,
-  canConfirm
+  canConfirm,
+  onReviewAlternatives
 }) => {
   if (!isOpen) return null;
 
@@ -149,17 +151,61 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
           </div>
 
           {!canConfirm && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                Please review alternatives before confirming your decision.
-              </p>
+            <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg relative">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center animate-pulse">
+                    <span className="text-white text-sm font-bold">!</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-orange-800 mb-1">
+                    Action Required
+                  </p>
+                  <p className="text-xs text-orange-700">
+                    Please review alternatives before confirming your decision.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="border-t p-6">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {!canConfirm && (
+              <div className="relative">
+                <button
+                  onClick={onReviewAlternatives}
+                  className="flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-xl animate-pulse border-2 border-purple-300"
+                >
+                  <span className="relative">
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></span>
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"></span>
+                  </span>
+                  Review Alternatives
+                </button>
+                
+                {/* Bubble tooltip */}
+                <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs px-3 py-2 rounded-lg shadow-lg animate-bounce whitespace-nowrap">
+                    Required Step!
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-t-4 border-t-purple-600 border-l-4 border-r-4 border-transparent"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {canConfirm && (
+              <button
+                onClick={onReviewAlternatives}
+                className="flex items-center gap-2 px-6 py-2 rounded-lg transition-colors duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                Review Alternatives
+              </button>
+            )}
+            
             <button
               onClick={onConfirmDecision}
               disabled={!canConfirm}
