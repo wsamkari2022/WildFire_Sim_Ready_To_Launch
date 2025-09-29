@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Users, Skull, Droplets, Building, Trees as Tree, Factory } from 'lucide-react';
+import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Minus, Users, Skull, Droplets, Building, Trees as Tree, Factory } from 'lucide-react';
 import { DecisionOption } from '../types';
 
 interface ExpertAnalysisModalProps {
@@ -41,7 +41,9 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
   const getRecommendationIcon = (recommendation: "Accept" | "Reject") => {
     return recommendation === "Accept" ? 
       <ThumbsUp className="text-green-500" size={18} /> : 
-      <ThumbsDown className="text-red-500" size={18} />;
+      recommendation === "Reject" ?
+      <ThumbsDown className="text-red-500" size={18} /> :
+      <Minus className="text-gray-500" size={18} />;
   };
 
   const getExpertTitle = (expertType: string) => {
@@ -222,7 +224,9 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
                           <span className={`text-sm font-medium px-3 py-1 rounded-full ${
                             opinion.recommendation === "Accept" 
                               ? "bg-green-100 text-green-800" 
-                              : "bg-red-100 text-red-800"
+                              : opinion.recommendation === "Reject"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
                           }`}>
                             {opinion.recommendation}
                           </span>
