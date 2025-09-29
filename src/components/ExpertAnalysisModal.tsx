@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Minus, Users, Skull, Droplets, Building, Trees as Tree, Factory } from 'lucide-react';
+import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Minus, Users, Skull, Droplets, Building, Trees as Tree, Factory, ChevronDown } from 'lucide-react';
 import { DecisionOption } from '../types';
 
 interface ExpertAnalysisModalProps {
@@ -19,6 +19,35 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
   onReviewAlternatives,
   isAligned
 }) => {
+  const [showScrollIndicator, setShowScrollIndicator] = React.useState(true);
+  const [scrollContainerRef, setScrollContainerRef] = React.useState<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (scrollContainerRef) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef;
+        const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+        
+        // Hide indicator when user has scrolled 80% or more
+        if (scrollPercentage >= 0.8) {
+          setShowScrollIndicator(false);
+        }
+      }
+    };
+
+    if (scrollContainerRef) {
+      scrollContainerRef.addEventListener('scroll', handleScroll);
+      return () => scrollContainerRef.removeEventListener('scroll', handleScroll);
+    }
+  }, [scrollContainerRef]);
+
+  React.useEffect(() => {
+    // Reset scroll indicator when modal opens
+    if (isOpen) {
+      setShowScrollIndicator(true);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const getExpertIcon = (expertType: string) => {
@@ -102,7 +131,10 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 flex-1 overflow-auto">
+        <div 
+          className="p-6 flex-1 overflow-auto relative"
+          ref={setScrollContainerRef}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Impact Summary & Key Considerations */}
             <div className="space-y-6">
@@ -257,6 +289,30 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Scroll Indicator Bubble */}
+          {showScrollIndicator && (
+            <div className="fixed bottom-32 right-8 z-50">
+              <div className="relative">
+                {/* Main bubble */}
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-3 rounded-full shadow-lg animate-bounce flex items-center gap-2 border-2 border-white">
+                  <ChevronDown size={20} className="animate-pulse" />
+                  <span className="font-medium text-sm whitespace-nowrap">
+                    Scroll to read all expert analyses!
+                  </span>
+                  <ChevronDown size={20} className="animate-pulse" />
+                </div>
+                
+                {/* Pulsing ring effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-ping opacity-20"></div>
+                
+                {/* Arrow pointing to scroll area */}
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                  <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-purple-500 animate-bounce"></div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
