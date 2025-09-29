@@ -56,6 +56,11 @@ const SimulationMainPage: React.FC = () => {
 
   const currentScenario = scenarios[currentScenarioIndex];
 
+  // Reset hasExploredAlternatives when scenario changes
+  useEffect(() => {
+    setHasExploredAlternatives(false);
+  }, [currentScenarioIndex]);
+
   const getMostFrequentExplicitValues = (): string[] => {
     const savedExplicitValues = localStorage.getItem('explicitValues');
     if (!savedExplicitValues) return [];
@@ -449,6 +454,7 @@ const SimulationMainPage: React.FC = () => {
 
   const handleExploreAlternatives = () => {
     setHasExploredAlternatives(true);
+    setHasExploredAlternatives(true);
     setShowAlternativesModal(true);
   };
 
@@ -659,30 +665,45 @@ const SimulationMainPage: React.FC = () => {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-base font-medium text-gray-800">Select Your Decision</h3>
                 <div className="flex gap-2">
-                  <button 
-                    onClick={handleExploreAlternatives}
-                    className={`flex items-center text-center text-sm px-3 py-1.5 rounded-md transition-colors duration-200 relative ${
-                      availableAlternatives.length === 0
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : hasExploredAlternatives
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                    }`}
-                    disabled={availableAlternatives.length === 0}
-                  >
-                    {hasExploredAlternatives ? (
-                      <Eye size={16} className="mr-1.5" />
-                    ) : (
-                      <Lightbulb size={16} className="mr-1.5" />
+                  <div className="relative">
+                    <button 
+                      onClick={handleExploreAlternatives}
+                      className={`flex items-center text-center text-sm px-3 py-1.5 rounded-md transition-all duration-300 relative ${
+                        availableAlternatives.length === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : hasExploredAlternatives
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-purple-50 text-purple-700 hover:bg-purple-100 animate-pulse shadow-lg shadow-purple-300/50'
+                      }`}
+                      disabled={availableAlternatives.length === 0}
+                    >
+                      {hasExploredAlternatives ? (
+                        <Eye size={16} className="mr-1.5" />
+                      ) : (
+                        <Lightbulb size={16} className="mr-1.5" />
+                      )}
+                      {hasExploredAlternatives
+                        ? `Alternatives Reviewed ${addedAlternatives.length > 0 ? `(${addedAlternatives.length} added)` : ''}`
+                        : 'Explore Alternatives'
+                      }
+                      {!hasExploredAlternatives && availableAlternatives.length > 0 && (
+                        <>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Elegant bubble tooltip */}
+                    {!hasExploredAlternatives && availableAlternatives.length > 0 && (
+                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-10">
+                        <div className="bg-purple-600 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap animate-bounce">
+                          Exploring is Required
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
+                        </div>
+                      </div>
                     )}
-                    {hasExploredAlternatives
-                      ? `Alternatives Reviewed ${addedAlternatives.length > 0 ? `(${addedAlternatives.length} added)` : ''}`
-                      : 'Explore Alternatives'
-                    }
-                    {!hasExploredAlternatives && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    )}
-                  </button>
+                  </div>
                   <button 
                     onClick={() => setShowRadarChart(true)}
                     className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md transition-colors duration-200"
