@@ -703,8 +703,11 @@ const SimulationMainPage: React.FC = () => {
 
   if (showAdaptivePreference) {
     return (
-      <AdaptivePreferenceView 
-        onBack={() => setShowAdaptivePreference(false)}
+      <AdaptivePreferenceView
+        onBack={() => {
+          setShowAdaptivePreference(false);
+          setSelectedDecision(null);
+        }}
         selectedOption={selectedDecision!}
         mainScenario={currentScenario}
         onConfirm={handleRankedOptionSelect}
