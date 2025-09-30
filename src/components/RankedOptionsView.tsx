@@ -42,7 +42,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
   const [preferenceMessage, setPreferenceMessage] = useState('');
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   const [previewMetrics, setPreviewMetrics] = useState(currentMetrics);
-  const [showMetricTooltip, setShowMetricTooltip] = useState(true);
+  const [showBubbleTooltip, setShowBubbleTooltip] = useState(true);
   const [hasClickedMetric, setHasClickedMetric] = useState(false);
 
   useEffect(() => {
@@ -182,11 +182,37 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
         </div>
 
         {/* Success message when user clicks a metric */}
-        {hasClickedMetric && !showMetricTooltip && (
+        {hasClickedMetric && !showBubbleTooltip && (
           <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-400 rounded-r-lg">
             <p className="text-sm text-green-800">
               🎉 <strong>Great!</strong> Now you can see how each option impacts this metric. Try clicking other metrics to compare!
             </p>
+          </div>
+        )}
+
+        {/* Bubble Tooltip for Metric Buttons */}
+        {showBubbleTooltip && (
+          <div className="relative mb-4">
+            <div className="absolute -top-2 left-8 z-50">
+              <div className="relative">
+                {/* Main bubble */}
+                <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-3 rounded-full shadow-lg animate-bounce flex items-center gap-2 border-2 border-white">
+                  <span className="animate-pulse">✨</span>
+                  <span className="font-medium text-sm whitespace-nowrap">
+                    Click these buttons to see impact numbers!
+                  </span>
+                  <span className="animate-pulse">✨</span>
+                </div>
+                
+                {/* Pulsing ring effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-ping opacity-20"></div>
+                
+                {/* Arrow pointing down to buttons */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                  <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-purple-500 animate-bounce"></div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
