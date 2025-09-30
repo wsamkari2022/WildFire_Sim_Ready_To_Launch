@@ -181,6 +181,15 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
           </button>
         </div>
 
+        {/* Success message when user clicks a metric */}
+        {hasClickedMetric && !showMetricTooltip && (
+          <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-400 rounded-r-lg">
+            <p className="text-sm text-green-800">
+              🎉 <strong>Great!</strong> Now you can see how each option impacts this metric. Try clicking other metrics to compare!
+            </p>
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow-md p-4 flex-1 flex flex-col">
           <h2 className="text-lg font-semibold mb-1 text-gray-700">{scenario.title}</h2>
           <p className="text-sm text-gray-600 mb-4">{scenario.description}</p>
