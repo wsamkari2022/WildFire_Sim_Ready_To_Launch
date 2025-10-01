@@ -280,13 +280,22 @@ const FinalAnalysisPage: React.FC = () => {
                 Final Analysis Report
               </h1>
             </div>
-            <button
-              onClick={handleRestart}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-            >
-              <RefreshCcw size={16} className="mr-2" />
-              Start New Simulation
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/results-feedback')}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+              >
+                Continue to Results & Feedback
+                <ArrowRight size={16} className="ml-2" />
+              </button>
+              <button
+                onClick={handleRestart}
+                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
+              >
+                <RefreshCcw size={16} className="mr-2" />
+                Restart
+              </button>
+            </div>
           </div>
         </div>
       </header>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { CVRQuestion } from '../types';
+import { TrackingManager } from '../utils/trackingUtils';
 
 interface CVRQuestionModalProps {
   isOpen: boolean;

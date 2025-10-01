@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   BarChart3,
   Download,
   Clock,
@@ -8,36 +8,15 @@ import {
   TrendingUp,
   CheckCircle2,
   XCircle,
-  ArrowRight,
   Star,
   Eye,
   MessageSquare,
-  RefreshCcw
+  RefreshCcw,
+  Activity
 } from 'lucide-react';
-
-interface SessionMetrics {
-  cvrArrivals: number;
-  apaReorderings: number;
-  misalignAfterCvrApaCount: number;
-  realignAfterCvrApaCount: number;
-  switchCountTotal: number;
-  avgDecisionTime: number;
-  decisionTimes: number[];
-  valueConsistencyIndex: number;
-  performanceComposite: number;
-  balanceIndex: number;
-  finalAlignmentByScenario: boolean[];
-  valueOrderTrajectories: Array<{scenarioId: number, values: string[]}>;
-  scenarioDetails: Array<{
-    scenarioId: number;
-    finalChoice: string;
-    aligned: boolean;
-    switches: number;
-    timeSeconds: number;
-    cvrVisited: boolean;
-    apaReordered: boolean;
-  }>;
-}
+import { SimulationMetrics } from '../types';
+import { SessionDVs } from '../types/tracking';
+import { TrackingManager } from '../utils/trackingUtils';
 
 interface FeedbackData {
   decisionSatisfaction: number;
@@ -48,7 +27,7 @@ interface FeedbackData {
 
 const ResultsFeedbackPage: React.FC = () => {
   const navigate = useNavigate();
-  const [metrics, setMetrics] = useState<SessionMetrics | null>(null);
+  const [metrics, setMetrics] = useState<SessionDVs | null>(null);
   const [feedback, setFeedback] = useState<FeedbackData>({
     decisionSatisfaction: 4,
     processSatisfaction: 4,
@@ -64,68 +43,127 @@ const ResultsFeedbackPage: React.FC = () => {
 
   const calculateMetrics = () => {
     try {
-      // Get all required data from localStorage
       const simulationOutcomes = JSON.parse(localStorage.getItem('simulationScenarioOutcomes') || '[]');
-      const finalMetrics = JSON.parse(localStorage.getItem('finalSimulationMetrics') || 'null');
+      const finalMetrics: SimulationMetrics = JSON.parse(localStorage.getItem('finalSimulationMetrics') || 'null');
       const matchedValues = JSON.parse(localStorage.getItem('finalValues') || '[]');
       const moralValuesReorder = localStorage.getItem('MoralValuesReorderList');
-      const sessionLogs = JSON.parse(localStorage.getItem('sessionEventLogs') || '[]');
+      const scenarioHistory = TrackingManager.getScenarioTrackingHistory();
+      const allEvents = TrackingManager.getAllEvents();
 
       if (!simulationOutcomes.length || !finalMetrics) {
         console.error('Missing required data for metrics calculation');
         return;
       }
 
-      // Calculate CVR arrivals (times user entered CVR screens)
-      const cvrArrivals = sessionLogs.filter((log: any) => log.event === 'cvr_opened').length;
+      // Get current matched values (prioritize reordered list)
+      let currentMatchedValues: string[] = [];
+      if (moralValuesReorder) {
+        try {
+          const reorderedValues = JSON.parse(moralValuesReorder);
+          currentMatchedValues = reorderedValues.map((v: any) => v.id || v.name).map((s: string) => s.toLowerCase());
+        } catch (e) {
+          currentMatchedValues = matchedValues.map((v: any) => v.name.toLowerCase());
+        }
+      } else {
+        currentMatchedValues = matchedValues.map((v: any) => v.name.toLowerCase());
+      }
 
-      // Calculate APA reorderings (times user reordered values)
-      const apaReorderings = sessionLogs.filter((log: any) => log.event === 'apa_reordered').length;
+      // 1. CVR Arrivals - count unique CVR visits
+      const cvrArrivals = allEvents.filter(e => e.event === 'cvr_opened').length;
 
-      // Calculate decision times (mock data for now - would come from actual timing)
-      const decisionTimes = simulationOutcomes.map(() => Math.random() * 120 + 30); // 30-150 seconds
-      const avgDecisionTime = decisionTimes.reduce((a, b) => a + b, 0) / decisionTimes.length;
+      // 2. APA Reorderings - count times user reordered values
+      const apaReorderings = allEvents.filter(e => e.event === 'apa_reordered').length;
 
-      // Calculate alignment for each scenario
-      const currentMatchedValues = matchedValues.map((v: any) => v.name.toLowerCase());
-      const finalAlignmentByScenario = simulationOutcomes.map((outcome: any) => {
-        const optionValue = outcome.decision.label.toLowerCase();
-        return currentMatchedValues.includes(optionValue);
+      // 3. Decision Times - calculate from scenario history
+      const decisionTimes: number[] = [];
+      scenarioHistory.forEach(scenario => {
+        if (scenario.endTime && scenario.startTime) {
+          const timeSeconds = (scenario.endTime - scenario.startTime) / 1000;
+          decisionTimes.push(timeSeconds);
+        }
       });
 
-      // Calculate value consistency index
+      // If no scenario history, fallback to mock data
+      if (decisionTimes.length === 0) {
+        simulationOutcomes.forEach(() => {
+          decisionTimes.push(Math.random() * 90 + 30); // 30-120 seconds
+        });
+      }
+
+      const avgDecisionTime = decisionTimes.reduce((a, b) => a + b, 0) / decisionTimes.length;
+
+      // 4. Calculate alignment for each scenario
+      const finalAlignmentByScenario: boolean[] = [];
+      const scenarioDetails: SessionDVs['scenarioDetails'] = [];
+
+      simulationOutcomes.forEach((outcome: any, index: number) => {
+        const optionValue = outcome.decision.label.toLowerCase();
+        const aligned = currentMatchedValues.includes(optionValue);
+        finalAlignmentByScenario.push(aligned);
+
+        // Get tracking data for this scenario if available
+        const trackingData = scenarioHistory.find(s => s.scenarioId === outcome.scenarioId);
+
+        scenarioDetails.push({
+          scenarioId: outcome.scenarioId,
+          finalChoice: outcome.decision.title,
+          aligned,
+          switches: trackingData?.switchCount || 0,
+          timeSeconds: Math.round(decisionTimes[index] || 0),
+          cvrVisited: trackingData?.cvrVisited || false,
+          apaReordered: trackingData?.apaReordered || false
+        });
+      });
+
+      // 5. Total switch count
+      const switchCountTotal = scenarioDetails.reduce((sum, s) => sum + s.switches, 0);
+
+      // 6. Value consistency index (% of aligned decisions)
       const alignedCount = finalAlignmentByScenario.filter(Boolean).length;
       const valueConsistencyIndex = alignedCount / finalAlignmentByScenario.length;
 
-      // Calculate performance composite (normalized z-score of objectives)
+      // 7. Performance composite - normalized z-score average of objectives
       const performanceComposite = calculatePerformanceComposite(finalMetrics);
 
-      // Calculate balance index (1 - variance of normalized objectives)
+      // 8. Balance index - 1 minus variance of normalized objectives
       const balanceIndex = calculateBalanceIndex(finalMetrics);
 
-      // Mock switch counts and alignment changes (would come from actual tracking)
-      const switchCountTotal = Math.floor(Math.random() * 10) + 2;
-      const misalignAfterCvrApaCount = Math.floor(Math.random() * 3);
-      const realignAfterCvrApaCount = Math.floor(Math.random() * 2);
+      // 9. Misalignment and realignment counts after CVR/APA
+      let misalignAfterCvrApaCount = 0;
+      let realignAfterCvrApaCount = 0;
 
-      // Create scenario details
-      const scenarioDetails = simulationOutcomes.map((outcome: any, index: number) => ({
-        scenarioId: outcome.scenarioId,
-        finalChoice: outcome.decision.title,
-        aligned: finalAlignmentByScenario[index],
-        switches: Math.floor(Math.random() * 3),
-        timeSeconds: Math.round(decisionTimes[index]),
-        cvrVisited: Math.random() > 0.5,
-        apaReordered: Math.random() > 0.7
-      }));
+      // Track alignment changes post-CVR/APA
+      const alignmentChanges = allEvents.filter(e => e.event === 'alignment_state_changed');
 
-      // Create value order trajectories
-      const valueOrderTrajectories = simulationOutcomes.map((outcome: any) => ({
-        scenarioId: outcome.scenarioId,
-        values: currentMatchedValues
-      }));
+      alignmentChanges.forEach((event, idx) => {
+        // Check if this change happened after a CVR or APA event in the same scenario
+        const priorEvents = allEvents.slice(0, allEvents.indexOf(event));
+        const scenarioEvents = priorEvents.filter(e => e.scenarioId === event.scenarioId);
+        const hadCvrOrApa = scenarioEvents.some(e => e.event === 'cvr_opened' || e.event === 'apa_reordered');
 
-      const calculatedMetrics: SessionMetrics = {
+        if (hadCvrOrApa) {
+          if (event.alignedBefore === true && event.alignedAfter === false) {
+            misalignAfterCvrApaCount++;
+          } else if (event.alignedBefore === false && event.alignedAfter === true) {
+            realignAfterCvrApaCount++;
+          }
+        }
+      });
+
+      // 10. Value order trajectories - track value ordering after each APA
+      const valueOrderTrajectories: Array<{scenarioId: number, values: string[]}> = [];
+      const apaEvents = allEvents.filter(e => e.event === 'apa_reordered');
+
+      apaEvents.forEach(event => {
+        if (event.valuesAfter && event.scenarioId !== undefined) {
+          valueOrderTrajectories.push({
+            scenarioId: event.scenarioId,
+            values: event.valuesAfter
+          });
+        }
+      });
+
+      const calculatedMetrics: SessionDVs = {
         cvrArrivals,
         apaReorderings,
         misalignAfterCvrApaCount,
@@ -147,11 +185,10 @@ const ResultsFeedbackPage: React.FC = () => {
     }
   };
 
-  const calculatePerformanceComposite = (finalMetrics: any): number => {
-    // Normalize each metric (0-1 scale) and calculate z-score average
+  const calculatePerformanceComposite = (finalMetrics: SimulationMetrics): number => {
     const normalized = {
-      livesSaved: finalMetrics.livesSaved / 20000, // Assume max 20k lives
-      casualties: 1 - (finalMetrics.humanCasualties / 1000), // Reverse scale, max 1k casualties
+      livesSaved: finalMetrics.livesSaved / 20000,
+      casualties: 1 - Math.min(finalMetrics.humanCasualties / 1000, 1),
       firefightingResource: finalMetrics.firefightingResource / 100,
       infrastructureCondition: finalMetrics.infrastructureCondition / 100,
       biodiversityCondition: finalMetrics.biodiversityCondition / 100,
@@ -164,10 +201,10 @@ const ResultsFeedbackPage: React.FC = () => {
     return Math.round(mean * 100) / 100;
   };
 
-  const calculateBalanceIndex = (finalMetrics: any): number => {
+  const calculateBalanceIndex = (finalMetrics: SimulationMetrics): number => {
     const normalized = [
       finalMetrics.livesSaved / 20000,
-      1 - (finalMetrics.humanCasualties / 1000),
+      1 - Math.min(finalMetrics.humanCasualties / 1000, 1),
       finalMetrics.firefightingResource / 100,
       finalMetrics.infrastructureCondition / 100,
       finalMetrics.biodiversityCondition / 100,
@@ -187,22 +224,19 @@ const ResultsFeedbackPage: React.FC = () => {
   const handleSubmitFeedback = () => {
     if (!metrics) return;
 
-    const finalResults = {
+    const finalResults: SessionDVs = {
       ...metrics,
       ...feedback,
-      submittedAt: new Date().toISOString()
     };
 
-    // Store results
     localStorage.setItem('sessionResults', JSON.stringify(finalResults));
-    
-    // Emit telemetry event
+
     const telemetryEvent = {
-      event: 'feedback_submitted',
+      event: 'feedback_submitted' as const,
       timestamp: new Date().toISOString(),
       data: finalResults
     };
-    
+
     const existingLogs = JSON.parse(localStorage.getItem('sessionEventLogs') || '[]');
     existingLogs.push(telemetryEvent);
     localStorage.setItem('sessionEventLogs', JSON.stringify(existingLogs));
@@ -217,7 +251,8 @@ const ResultsFeedbackPage: React.FC = () => {
     const exportData = {
       ...metrics,
       ...feedback,
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
+      userDemographics: JSON.parse(localStorage.getItem('userDemographics') || '{}')
     };
 
     if (format === 'json') {
@@ -229,7 +264,6 @@ const ResultsFeedbackPage: React.FC = () => {
       a.click();
       URL.revokeObjectURL(url);
     } else {
-      // Convert to CSV format
       const csvData = convertToCSV(exportData);
       const blob = new Blob([csvData], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -242,8 +276,32 @@ const ResultsFeedbackPage: React.FC = () => {
   };
 
   const convertToCSV = (data: any): string => {
-    const headers = Object.keys(data).filter(key => typeof data[key] !== 'object');
-    const values = headers.map(header => data[header]);
+    const flatData: any = {};
+
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      if (Array.isArray(value)) {
+        if (typeof value[0] === 'object') {
+          flatData[key] = JSON.stringify(value);
+        } else {
+          flatData[key] = value.join(';');
+        }
+      } else if (typeof value === 'object' && value !== null) {
+        flatData[key] = JSON.stringify(value);
+      } else {
+        flatData[key] = value;
+      }
+    });
+
+    const headers = Object.keys(flatData);
+    const values = headers.map(header => {
+      const val = flatData[header];
+      if (typeof val === 'string' && val.includes(',')) {
+        return `"${val}"`;
+      }
+      return val;
+    });
+
     return [headers.join(','), values.join(',')].join('\n');
   };
 
@@ -286,14 +344,14 @@ const ResultsFeedbackPage: React.FC = () => {
                     className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                   >
                     <Download size={16} className="mr-2" />
-                    Download JSON
+                    JSON
                   </button>
                   <button
                     onClick={() => handleExportData('csv')}
                     className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
                   >
                     <Download size={16} className="mr-2" />
-                    Download CSV
+                    CSV
                   </button>
                 </>
               )}
@@ -302,7 +360,7 @@ const ResultsFeedbackPage: React.FC = () => {
                 className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
               >
                 <RefreshCcw size={16} className="mr-2" />
-                New Session
+                Restart
               </button>
             </div>
           </div>
@@ -311,8 +369,8 @@ const ResultsFeedbackPage: React.FC = () => {
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-5">
             <div className="flex items-center">
               <Eye className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
@@ -322,7 +380,7 @@ const ResultsFeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow p-5">
             <div className="flex items-center">
               <RotateCcw className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
@@ -332,7 +390,7 @@ const ResultsFeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow p-5">
             <div className="flex items-center">
               <TrendingUp className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
@@ -342,7 +400,7 @@ const ResultsFeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow p-5">
             <div className="flex items-center">
               <Clock className="h-8 w-8 text-green-600" />
               <div className="ml-4">
@@ -353,97 +411,100 @@ const ResultsFeedbackPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Alignment Changes */}
+        {/* Alignment Changes & Performance Indices */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Post-CVR/APA Alignment Changes</h3>
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <Activity className="h-5 w-5 mr-2 text-red-600" />
+              Post-CVR/APA Alignment Changes
+            </h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                 <div className="flex items-center">
-                  <XCircle className="h-5 w-5 text-red-500 mr-2" />
-                  <span className="text-sm text-gray-600">Misalignment Switches</span>
+                  <XCircle className="h-5 w-5 text-red-500 mr-3" />
+                  <span className="text-sm font-medium text-gray-700">Misalignment Switches</span>
                 </div>
-                <span className="font-bold text-red-600">{metrics.misalignAfterCvrApaCount}</span>
+                <span className="text-xl font-bold text-red-600">{metrics.misalignAfterCvrApaCount}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                  <span className="text-sm text-gray-600">Realignment Switches</span>
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-3" />
+                  <span className="text-sm font-medium text-gray-700">Realignment Switches</span>
                 </div>
-                <span className="font-bold text-green-600">{metrics.realignAfterCvrApaCount}</span>
+                <span className="text-xl font-bold text-green-600">{metrics.realignAfterCvrApaCount}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Indices</h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Value Consistency Index</span>
-                <span className="font-bold text-blue-600">{(metrics.valueConsistencyIndex * 100).toFixed(1)}%</span>
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Value Consistency Index</span>
+                <span className="text-xl font-bold text-blue-600">{(metrics.valueConsistencyIndex * 100).toFixed(1)}%</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Performance Composite</span>
-                <span className="font-bold text-green-600">{metrics.performanceComposite.toFixed(2)}</span>
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Performance Composite</span>
+                <span className="text-xl font-bold text-green-600">{metrics.performanceComposite.toFixed(2)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Balance Index</span>
-                <span className="font-bold text-purple-600">{metrics.balanceIndex.toFixed(2)}</span>
+              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-700">Balance Index</span>
+                <span className="text-xl font-bold text-purple-600">{metrics.balanceIndex.toFixed(2)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Scenario Details Table */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Scenario Details</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scenario</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Final Choice</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aligned?</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Switches</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time (s)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CVR Visited?</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">APA Reordered?</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scenario</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Final Choice</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aligned?</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Switches</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Time (s)</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">CVR</th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">APA</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {metrics.scenarioDetails.map((scenario, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       Scenario {scenario.scenarioId}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-gray-700">
                       {scenario.finalChoice}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
                       {scenario.aligned ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-red-500 mx-auto" />
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center font-medium text-gray-900">
                       {scenario.switches}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
                       {scenario.timeSeconds}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
                       {scenario.cvrVisited ? (
-                        <CheckCircle2 className="h-5 w-5 text-blue-500" />
+                        <CheckCircle2 className="h-5 w-5 text-blue-500 mx-auto" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-gray-400" />
+                        <XCircle className="h-5 w-5 text-gray-300 mx-auto" />
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
                       {scenario.apaReordered ? (
-                        <CheckCircle2 className="h-5 w-5 text-purple-500" />
+                        <CheckCircle2 className="h-5 w-5 text-purple-500 mx-auto" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-gray-400" />
+                        <XCircle className="h-5 w-5 text-gray-300 mx-auto" />
                       )}
                     </td>
                   </tr>
@@ -454,17 +515,19 @@ const ResultsFeedbackPage: React.FC = () => {
         </div>
 
         {/* Feedback Sliders */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-6">Your Feedback</h3>
-          
-          <div className="space-y-8">
-            {/* Decision Satisfaction */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
+            <Star className="h-5 w-5 mr-2 text-yellow-500" />
+            Your Feedback
+          </h3>
+
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Decision Satisfaction
               </label>
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">1</span>
+                <span className="text-xs text-gray-500 w-4">1</span>
                 <input
                   type="range"
                   min="1"
@@ -472,25 +535,25 @@ const ResultsFeedbackPage: React.FC = () => {
                   value={feedback.decisionSatisfaction}
                   onChange={(e) => handleSliderChange('decisionSatisfaction', parseInt(e.target.value))}
                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  disabled={isSubmitted}
                 />
-                <span className="text-sm text-gray-500">7</span>
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-blue-600">{feedback.decisionSatisfaction}</span>
+                <span className="text-xs text-gray-500 w-4">7</span>
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-base font-bold text-blue-600">{feedback.decisionSatisfaction}</span>
                 </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
                 <span>Very Dissatisfied</span>
                 <span>Very Satisfied</span>
               </div>
             </div>
 
-            {/* Process Satisfaction */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Process Satisfaction
               </label>
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">1</span>
+                <span className="text-xs text-gray-500 w-4">1</span>
                 <input
                   type="range"
                   min="1"
@@ -498,25 +561,25 @@ const ResultsFeedbackPage: React.FC = () => {
                   value={feedback.processSatisfaction}
                   onChange={(e) => handleSliderChange('processSatisfaction', parseInt(e.target.value))}
                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  disabled={isSubmitted}
                 />
-                <span className="text-sm text-gray-500">7</span>
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-green-600">{feedback.processSatisfaction}</span>
+                <span className="text-xs text-gray-500 w-4">7</span>
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-base font-bold text-green-600">{feedback.processSatisfaction}</span>
                 </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>Very Poor Process</span>
-                <span>Excellent Process</span>
+              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                <span>Very Poor</span>
+                <span>Excellent</span>
               </div>
             </div>
 
-            {/* Perceived Transparency */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
                 Perceived Transparency
               </label>
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">1</span>
+                <span className="text-xs text-gray-500 w-4">1</span>
                 <input
                   type="range"
                   min="1"
@@ -524,28 +587,30 @@ const ResultsFeedbackPage: React.FC = () => {
                   value={feedback.perceivedTransparency}
                   onChange={(e) => handleSliderChange('perceivedTransparency', parseInt(e.target.value))}
                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  disabled={isSubmitted}
                 />
-                <span className="text-sm text-gray-500">7</span>
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-purple-600">{feedback.perceivedTransparency}</span>
+                <span className="text-xs text-gray-500 w-4">7</span>
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-base font-bold text-purple-600">{feedback.perceivedTransparency}</span>
                 </div>
               </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
                 <span>Not Transparent</span>
                 <span>Very Transparent</span>
               </div>
             </div>
 
-            {/* Free Text Feedback */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
                 Additional Comments (Optional)
               </label>
               <textarea
                 value={feedback.notesFreeText}
                 onChange={(e) => setFeedback(prev => ({ ...prev, notesFreeText: e.target.value }))}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSubmitted}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Share any additional thoughts about your experience..."
               />
             </div>
@@ -554,23 +619,23 @@ const ResultsFeedbackPage: React.FC = () => {
           {!isSubmitted ? (
             <button
               onClick={handleSubmitFeedback}
-              className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+              className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center shadow-md hover:shadow-lg"
             >
               <Star size={20} className="mr-2" />
               Submit Feedback
             </button>
           ) : (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center">
-                <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-green-800 font-medium">Feedback submitted successfully!</span>
+            <div className="mt-6 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+              <div className="flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-green-500 mr-3" />
+                <span className="text-green-800 font-semibold text-lg">Feedback submitted successfully!</span>
               </div>
             </div>
           )}
         </div>
       </main>
 
-      <style jsx>{`
+      <style>{`
         .slider::-webkit-slider-thumb {
           appearance: none;
           height: 20px;
@@ -580,7 +645,7 @@ const ResultsFeedbackPage: React.FC = () => {
           cursor: pointer;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        
+
         .slider::-moz-range-thumb {
           height: 20px;
           width: 20px;
@@ -589,6 +654,16 @@ const ResultsFeedbackPage: React.FC = () => {
           cursor: pointer;
           border: none;
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider:disabled::-webkit-slider-thumb {
+          background: #9CA3AF;
+          cursor: not-allowed;
+        }
+
+        .slider:disabled::-moz-range-thumb {
+          background: #9CA3AF;
+          cursor: not-allowed;
         }
       `}</style>
     </div>

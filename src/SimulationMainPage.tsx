@@ -12,6 +12,7 @@ import CVRQuestionModal from './components/CVRQuestionModal';
 import AdaptivePreferenceView from './components/AdaptivePreferenceView';
 import { SimulationMetrics, DecisionOption as DecisionOptionType, ExplicitValue } from './types';
 import { scenarios } from './data/scenarios';
+import { TrackingManager } from './utils/trackingUtils';
 
 // Register Chart.js components
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -59,7 +60,12 @@ const SimulationMainPage: React.FC = () => {
   // Reset hasExploredAlternatives when scenario changes
   useEffect(() => {
     setHasExploredAlternatives(false);
-  }, [currentScenarioIndex]);
+
+    // Start tracking for this scenario
+    if (currentScenario) {
+      TrackingManager.startScenario(currentScenario.id);
+    }
+  }, [currentScenarioIndex, currentScenario]);
 
   const getMostFrequentExplicitValues = (): string[] => {
     const savedExplicitValues = localStorage.getItem('explicitValues');
@@ -376,6 +382,12 @@ const SimulationMainPage: React.FC = () => {
   }, [currentScenarioIndex, getInitialOptions, addedAlternatives]);
 
   const handleDecisionSelect = (decision: DecisionOptionType) => {
+    const optionValue = decision.label.toLowerCase();
+    const isAligned = matchedStableValues.includes(optionValue);
+
+    // Track option selection
+    TrackingManager.recordOptionSelection(decision.id, decision.label, isAligned);
+
     setTempSelectedOption(decision);
     setShowExpertModal(true);
   };
@@ -529,7 +541,12 @@ const SimulationMainPage: React.FC = () => {
 
   const handleExploreAlternatives = () => {
     setHasExploredAlternatives(true);
-    setHasExploredAlternatives(true);
+
+    // Track alternatives explored
+    if (currentScenario) {
+      TrackingManager.recordAlternativesExplored(currentScenario.id);
+    }
+
     setShowAlternativesModal(true);
   };
 
@@ -538,7 +555,7 @@ const SimulationMainPage: React.FC = () => {
     if (!hasExploredAlternatives) {
       return; // This should be handled by the modal's disabled state
     }
-    
+
     if (!selectedDecision) return;
 
     setShowDecisionSummary(false);
@@ -552,6 +569,11 @@ const SimulationMainPage: React.FC = () => {
       propertiesCondition: Math.max(0, metrics.propertiesCondition + selectedDecision.impact.propertiesCondition),
       nuclearPowerStation: Math.max(0, metrics.nuclearPowerStation + selectedDecision.impact.nuclearPowerStation),
     };
+
+    // Track option confirmation
+    const optionValue = selectedDecision.label.toLowerCase();
+    const isAligned = matchedStableValues.includes(optionValue);
+    TrackingManager.confirmOption(selectedDecision.id, selectedDecision.label, isAligned, newMetrics);
 
     // Store the scenario outcome
     const outcome = {
@@ -573,9 +595,12 @@ const SimulationMainPage: React.FC = () => {
     setTimeout(() => {
       setAnimatingMetrics([]);
     }, 1000);
-    
+
     setSelectedDecision(null);
-    
+
+    // End scenario tracking
+    TrackingManager.endScenario();
+
     if (currentScenarioIndex < scenarios.length - 1) {
       setIsTransitioning(true);
       
