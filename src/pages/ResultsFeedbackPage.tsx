@@ -207,13 +207,33 @@ const ResultsFeedbackPage: React.FC = () => {
       let misalignAfterCvrApaCount = 0;
       let realignAfterCvrApaCount = 0;
 
-      // Track alignment changes post-CVR/APA
+      // For each scenario, check if user made misaligned or aligned final choices after CVR/APA
+      scenarioDetails.forEach((scenario, index) => {
+        const scenarioEvents = allEvents.filter(e => e.scenarioId === scenario.scenarioId);
+
+        // Check if user visited CVR or did APA in this scenario
+        const hadCvr = scenarioEvents.some(e => e.event === 'cvr_opened' || e.event === 'cvr_answered');
+        const hadApa = scenarioEvents.some(e => e.event === 'apa_reordered');
+        const hadCvrOrApa = hadCvr || hadApa;
+
+        if (hadCvrOrApa) {
+          // Count final choice alignment status after CVR/APA intervention
+          if (!scenario.aligned) {
+            // User made a misaligned final choice even after CVR/APA
+            misalignAfterCvrApaCount++;
+          } else {
+            // User made an aligned final choice after CVR/APA
+            realignAfterCvrApaCount++;
+          }
+        }
+      });
+
+      // Also track alignment state changes during selection
       const alignmentChanges = allEvents.filter(e => e.event === 'alignment_state_changed');
 
       alignmentChanges.forEach(event => {
         if (event.scenarioId === undefined) return;
 
-        // Check if this change happened after a CVR or APA event in the same scenario
         const eventIndex = allEvents.indexOf(event);
         const priorEvents = allEvents.slice(0, eventIndex);
         const scenarioEvents = priorEvents.filter(e => e.scenarioId === event.scenarioId);

@@ -452,6 +452,9 @@ const SimulationMainPage: React.FC = () => {
     if (!isAligned && tempSelectedOption.cvrQuestion) {
       setSelectedDecision(tempSelectedOption);
       setShowCVRModal(true);
+
+      // Track CVR visit
+      TrackingManager.recordCVRVisit(currentScenario.id, tempSelectedOption.id);
     } else {
       setSelectedDecision(tempSelectedOption);
       setShowDecisionSummary(true);
@@ -536,6 +539,8 @@ const SimulationMainPage: React.FC = () => {
     } else {
       // User rejected their choice, show adaptive preference view
       setShowAdaptivePreference(true);
+
+      // Note: APA tracking will be done when user actually reorders in AdaptivePreferenceView
     }
   };
 

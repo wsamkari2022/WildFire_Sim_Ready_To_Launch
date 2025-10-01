@@ -3,6 +3,7 @@ import { ArrowLeft, MoveVertical, AlertCircle, Scale, Zap, Leaf, Shield, Ban, Ca
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { DecisionOption, MainScenario } from '../types';
 import RankedOptionsView from './RankedOptionsView';
+import { TrackingManager } from '../utils/trackingUtils';
 
 interface ComparisonTableProps {
   firstColumn: {
@@ -142,17 +143,15 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
   const handleContinue = () => {
     if (!preferenceType || rankingItems.length === 0) return;
 
-    // Emit telemetry event for APA reordering
-    const telemetryEvent = {
-      event: 'apa_reordered',
-      timestamp: new Date().toISOString(),
-      preferenceType,
-      newOrder: rankingItems
-    };
-    
-    const existingLogs = JSON.parse(localStorage.getItem('sessionEventLogs') || '[]');
-    existingLogs.push(telemetryEvent);
-    localStorage.setItem('sessionEventLogs', JSON.stringify(existingLogs));
+    // Track APA reordering with scenario context
+    const valuesBefore = preferenceType === 'values' ? moralValues.map(v => v.id) : simulationMetrics.map(m => m.id);
+    const valuesAfter = rankingItems.map((item: any) => item.id);
+    TrackingManager.recordAPAReordering(
+      mainScenario.id,
+      valuesBefore,
+      valuesAfter,
+      preferenceType as 'metrics' | 'values'
+    );
 
     localStorage.setItem('preferenceTypeFlag', preferenceType === 'metrics' ? 'true' : 'false');
 
