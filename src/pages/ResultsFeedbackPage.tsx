@@ -59,11 +59,8 @@ const ResultsFeedbackPage: React.FC = () => {
 
       // Get matched values from explicit + implicit (for Scenario 1)
       const matchedStableValues: string[] = matchedValues.map((v: any) =>
-        (v.name || v).toString().toLowerCase()
+        (v.name || v).toString().toLowerCase().trim()
       );
-
-      console.log('[ResultsFeedback] matchedStableValues:', matchedStableValues);
-      console.log('[ResultsFeedback] simulationOutcomes:', simulationOutcomes);
 
       // Get reordered moral values (for Scenarios 2 & 3)
       let moralValuesReorderList: string[] = [];
@@ -71,36 +68,29 @@ const ResultsFeedbackPage: React.FC = () => {
         try {
           const reorderedValues = JSON.parse(moralValuesReorder);
           moralValuesReorderList = reorderedValues.map((v: any) =>
-            (v.id || v.name || v).toString().toLowerCase()
+            (v.id || v.name || v.label || v).toString().toLowerCase().trim()
           );
-          console.log('[ResultsFeedback] moralValuesReorderList from storage:', moralValuesReorderList);
         } catch (e) {
           console.error('Error parsing MoralValuesReorderList:', e);
           moralValuesReorderList = matchedStableValues;
         }
       } else {
-        console.log('[ResultsFeedback] No MoralValuesReorderList found, using matchedStableValues');
         moralValuesReorderList = matchedStableValues;
       }
 
       // Helper function to check alignment based on scenario
+      // Scenario 1: Checks if user's selection exists in matchedStableValues list
+      // Scenarios 2 & 3: Checks if user's selection exists in moralValuesReorderList
       const checkAlignment = (optionLabel: string, scenarioId: number): boolean => {
-        const optionValue = optionLabel.toLowerCase();
-
-        console.log(`[Alignment Check] Scenario ${scenarioId}, Option: "${optionValue}"`);
+        if (!optionLabel) return false;
+        const optionValue = optionLabel.toLowerCase().trim();
 
         if (scenarioId === 1) {
-          // Scenario 1: Use matchedStableValues
-          console.log(`  Using matchedStableValues:`, matchedStableValues);
-          const isAligned = matchedStableValues.includes(optionValue);
-          console.log(`  Result: ${isAligned ? 'ALIGNED' : 'MISALIGNED'}`);
-          return isAligned;
+          // Scenario 1: Check against matchedStableValues (from explicit + implicit)
+          return matchedStableValues.includes(optionValue);
         } else {
-          // Scenarios 2 & 3: Use moralValuesReorderList
-          console.log(`  Using moralValuesReorderList:`, moralValuesReorderList);
-          const isAligned = moralValuesReorderList.includes(optionValue);
-          console.log(`  Result: ${isAligned ? 'ALIGNED' : 'MISALIGNED'}`);
-          return isAligned;
+          // Scenarios 2 & 3: Check against moralValuesReorderList
+          return moralValuesReorderList.includes(optionValue);
         }
       };
 

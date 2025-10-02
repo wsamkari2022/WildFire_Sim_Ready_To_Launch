@@ -58,8 +58,11 @@ const SimulationMainPage: React.FC = () => {
   const currentScenario = scenarios[currentScenarioIndex];
 
   // Helper function to check if an option is aligned based on scenario
+  // Scenario 1: Checks if user's selection exists in matchedStableValues list
+  // Scenarios 2 & 3: Checks if user's selection exists in MoralValuesReorderList
   const checkAlignment = (optionLabel: string, scenarioId: number): boolean => {
-    const optionValue = optionLabel.toLowerCase();
+    if (!optionLabel) return false;
+    const optionValue = optionLabel.toLowerCase().trim();
 
     if (scenarioId === 1) {
       // Scenario 1: Check against matchedStableValues (from explicit + implicit)
@@ -71,7 +74,7 @@ const SimulationMainPage: React.FC = () => {
         try {
           const reorderedValues = JSON.parse(moralValuesReorder);
           const reorderedIds = reorderedValues.map((v: any) =>
-            (v.id || v.name || v).toString().toLowerCase()
+            (v.id || v.name || v.label || v).toString().toLowerCase().trim()
           );
           return reorderedIds.includes(optionValue);
         } catch (e) {
