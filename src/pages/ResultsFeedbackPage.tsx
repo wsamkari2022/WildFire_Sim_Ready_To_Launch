@@ -59,7 +59,7 @@ const ResultsFeedbackPage: React.FC = () => {
 
       // Get matched values from explicit + implicit (for Scenario 1)
       const matchedStableValues: string[] = matchedValues.map((v: any) =>
-        (v.name || v).toString().toLowerCase().trim()
+        (v.name || v).toString().toLowerCase()
       );
 
       // Get reordered moral values (for Scenarios 2 & 3)
@@ -68,7 +68,7 @@ const ResultsFeedbackPage: React.FC = () => {
         try {
           const reorderedValues = JSON.parse(moralValuesReorder);
           moralValuesReorderList = reorderedValues.map((v: any) =>
-            (v.id || v.name || v.label || v).toString().toLowerCase().trim()
+            (v.id || v.name || v).toString().toLowerCase()
           );
         } catch (e) {
           console.error('Error parsing MoralValuesReorderList:', e);
@@ -79,17 +79,13 @@ const ResultsFeedbackPage: React.FC = () => {
       }
 
       // Helper function to check alignment based on scenario
-      // Scenario 1: Checks if user's selection exists in matchedStableValues list
-      // Scenarios 2 & 3: Checks if user's selection exists in moralValuesReorderList
       const checkAlignment = (optionLabel: string, scenarioId: number): boolean => {
-        if (!optionLabel) return false;
-        const optionValue = optionLabel.toLowerCase().trim();
-
+        const optionValue = optionLabel.toLowerCase();
         if (scenarioId === 1) {
-          // Scenario 1: Check against matchedStableValues (from explicit + implicit)
+          // Scenario 1: Use matchedStableValues
           return matchedStableValues.includes(optionValue);
         } else {
-          // Scenarios 2 & 3: Check against moralValuesReorderList
+          // Scenarios 2 & 3: Use moralValuesReorderList
           return moralValuesReorderList.includes(optionValue);
         }
       };
