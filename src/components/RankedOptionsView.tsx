@@ -284,18 +284,21 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
                     }`}>
                       {index + 1}
                     </span>
-                    <h3 className={`font-medium flex-1 ${
+                    <h3 className={`font-medium ${
                       isDisabled ? 'text-gray-500' : 'text-gray-900'
                     }`}>{option.title}</h3>
                     {isDisabled && (
-                      <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-600 text-white text-xs font-medium rounded-full">
-                        <Lock size={12} />
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-gray-600 text-white text-xs font-medium rounded">
+                        <Lock size={11} />
                         Locked
                       </div>
                     )}
-                    {selectedMetric && !isDisabled && (
+                    <div className="flex-1"></div>
+                    {selectedMetric && (
                       <span className={`font-medium ${
-                        metricButtons.find(m => m.id === selectedMetric)?.color
+                        isDisabled
+                          ? 'text-gray-400'
+                          : metricButtons.find(m => m.id === selectedMetric)?.color
                       }`}>
                         {getMetricValue(option, selectedMetric)}
                       </span>
