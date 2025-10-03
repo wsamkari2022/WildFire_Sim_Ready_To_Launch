@@ -46,7 +46,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
   const [previewMetrics, setPreviewMetrics] = useState(currentMetrics);
   const [showBubbleTooltip, setShowBubbleTooltip] = useState(true);
   const [hasClickedMetric, setHasClickedMetric] = useState(false);
-  const [showPriorityConfirmationMessage, setShowPriorityConfirmationMessage] = useState(false);
 
   useEffect(() => {
     // Mark that the user has accessed the RankedOptionsView
@@ -57,10 +56,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
     const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
 
     const rankings = preferenceType === 'true' ? metricsRanking : valuesRanking;
-
-    // Check if user selected from top 2 in previous scenario
-    const selectedFromTop2 = localStorage.getItem('selectedFromTop2Previous') === 'true';
-    setShowPriorityConfirmationMessage(selectedFromTop2);
 
     const topPriorities = rankings.slice(0, 2).map(r => r.label).join(', ');
     setPreferenceMessage(
@@ -219,20 +214,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
         <div className="bg-white rounded-lg shadow-md p-4 flex-1 flex flex-col">
           <h2 className="text-lg font-semibold mb-1 text-gray-700">{scenario.title}</h2>
           <p className="text-sm text-gray-600 mb-4">{scenario.description}</p>
-
-          {showPriorityConfirmationMessage && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-4">
-              <p className="text-blue-800">
-                Because you selected '{(() => {
-                  const preferenceType = localStorage.getItem('preferenceTypeFlag');
-                  const metricsRanking = JSON.parse(localStorage.getItem('simulationMetricsRanking') || '[]');
-                  const valuesRanking = JSON.parse(localStorage.getItem('moralValuesRanking') || '[]');
-                  const rankings = preferenceType === 'true' ? metricsRanking : valuesRanking;
-                  return rankings.slice(0, 2).map(r => r.label).join("' and '");
-                })()}' as your highest {localStorage.getItem('preferenceTypeFlag') === 'true' ? 'metrics' : 'moral'} priorities in the previous simulation, the top two options are ranked accordingly.
-              </p>
-            </div>
-          )}
 
           <div className="bg-blue-50 p-4 rounded-lg mb-6">
             <p className="text-blue-800">{preferenceMessage}</p>
