@@ -17,7 +17,7 @@ export const scenarios: Scenario[] = [
         impact: {
           livesSaved: 2000,
           humanCasualties: 12,
-          firefightingResource: -25,
+          firefightingResource: -50,
           infrastructureCondition: -18,
           biodiversityCondition: -20,
           propertiesCondition: -15,
@@ -500,7 +500,7 @@ export const scenarios: Scenario[] = [
         impact: {
           livesSaved: 400,
           humanCasualties: 1600,
-          firefightingResource: -25,
+          firefightingResource: -45,
           infrastructureCondition: -18,
           biodiversityCondition: -20,
           propertiesCondition: -16,
