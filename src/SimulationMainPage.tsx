@@ -61,6 +61,11 @@ const SimulationMainPage: React.FC = () => {
   useEffect(() => {
     setHasExploredAlternatives(false);
 
+    // Initialize flag for first scenario
+    if (currentScenarioIndex === 0) {
+      localStorage.setItem('selectedFromTop2Previous', 'false');
+    }
+
     // Start tracking for this scenario
     if (currentScenario) {
       TrackingManager.startScenario(currentScenario.id);
