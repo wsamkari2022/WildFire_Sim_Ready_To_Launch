@@ -10,6 +10,8 @@ interface DecisionOptionProps {
 }
 
 const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, currentMetrics, scenarioIndex }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   const formatImpactValue = (value: number, isLivesSaved: boolean = false, isCasualties: boolean = false) => {
     if (isLivesSaved) {
       return `+${value}`;
@@ -85,7 +87,11 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
   const valueDisplay = valueMap[option.label as keyof typeof valueMap];
 
   return (
-    <div className="relative h-full">
+    <div
+      className="relative h-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <button
         onClick={() => !isFeasible ? null : onSelect(option)}
         disabled={!isFeasible}
@@ -171,8 +177,8 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
       </div>
       </button>
 
-      {!isFeasible && insufficientResources.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-red-600 text-white text-xs px-3 py-2 rounded-md shadow-lg">
+      {!isFeasible && isHovered && insufficientResources.length > 0 && (
+        <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-red-600 text-white text-xs px-3 py-2 rounded-md shadow-lg transition-opacity duration-200">
           <div className="font-semibold mb-1">Not Feasible:</div>
           {insufficientResources.map((resource, idx) => (
             <div key={idx}>
