@@ -57,7 +57,7 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
     
     const rankings = preferenceType === 'true' ? metricsRanking : valuesRanking;
     
-    const topPriorities = rankings.slice(0, 3).map(r => r.label).join(', ');
+    const topPriorities = rankings.slice(0, 2).map(r => r.label).join(', ');
     setPreferenceMessage(
       preferenceType === 'true'
         ? `Based on your simulation metrics priorities (${topPriorities}), the following options are ranked according to their impact on these key metrics:`
@@ -276,14 +276,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
                       : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
                   }`}
                 >
-                  {isDisabled && (
-                    <div className="absolute top-3 right-3">
-                      <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-600 text-white text-xs font-medium rounded-full">
-                        <Lock size={12} />
-                        Locked
-                      </div>
-                    </div>
-                  )}
                   <div className="flex items-center gap-3 mb-2">
                     <span className={`w-8 h-8 flex items-center justify-center rounded-full font-semibold ${
                       isDisabled
@@ -292,14 +284,18 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
                     }`}>
                       {index + 1}
                     </span>
-                    <h3 className={`font-medium ${
+                    <h3 className={`font-medium flex-1 ${
                       isDisabled ? 'text-gray-500' : 'text-gray-900'
                     }`}>{option.title}</h3>
-                    {selectedMetric && (
-                      <span className={`ml-auto font-medium ${
-                        isDisabled
-                          ? 'text-gray-400'
-                          : metricButtons.find(m => m.id === selectedMetric)?.color
+                    {isDisabled && (
+                      <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-600 text-white text-xs font-medium rounded-full">
+                        <Lock size={12} />
+                        Locked
+                      </div>
+                    )}
+                    {selectedMetric && !isDisabled && (
+                      <span className={`font-medium ${
+                        metricButtons.find(m => m.id === selectedMetric)?.color
                       }`}>
                         {getMetricValue(option, selectedMetric)}
                       </span>
