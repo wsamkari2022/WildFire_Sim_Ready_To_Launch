@@ -150,6 +150,12 @@ const ResultsFeedbackPage: React.FC = () => {
         const optionValue = (outcome.decision.label || '').toLowerCase();
         const scenarioId = outcome.scenarioId;
 
+        // Count CVR visits and answers for this scenario first
+        const scenarioCvrVisits = cvrOpenEvents.filter(e => e.scenarioId === outcome.scenarioId);
+        const scenarioCvrYesAnswers = cvrAnswerEvents.filter(
+          e => e.scenarioId === outcome.scenarioId && e.cvrAnswer === true
+        );
+
         // Apply different alignment rules based on scenario
         let aligned = false;
         if (scenarioId === 1) {
@@ -158,6 +164,12 @@ const ResultsFeedbackPage: React.FC = () => {
         } else if (scenarioId === 2 || scenarioId === 3) {
           // Scenarios 2 & 3: Check against moralValuesReorderList
           aligned = moralValuesReorderList.includes(optionValue);
+        }
+
+        // CRITICAL: If user answered "Yes, I would" to CVR, it means they would change their decision
+        // This indicates misalignment with current choice, so set aligned to false
+        if (scenarioCvrYesAnswers.length > 0) {
+          aligned = false;
         }
 
         finalAlignmentByScenario.push(aligned);
@@ -178,12 +190,6 @@ const ResultsFeedbackPage: React.FC = () => {
           e => e.event === 'option_selected' && e.scenarioId === outcome.scenarioId
         );
         const switchCount = Math.max(0, scenarioOptionSelections.length - 1);
-
-        // Count CVR visits for this scenario
-        const scenarioCvrVisits = cvrOpenEvents.filter(e => e.scenarioId === outcome.scenarioId);
-        const scenarioCvrYesAnswers = cvrAnswerEvents.filter(
-          e => e.scenarioId === outcome.scenarioId && e.cvrAnswer === true
-        );
 
         // Count APA reorderings for this scenario
         const scenarioApaEvents = apaEvents.filter(e => e.scenarioId === outcome.scenarioId);
@@ -222,10 +228,12 @@ const ResultsFeedbackPage: React.FC = () => {
       let realignAfterCvrApaCount = 0;
 
       // Check if realignment happened:
-      // Realignment = CVR "Yes" answer + choosing from top reordered values + top 2 reordered != top 2 matched stable
-      const top2MatchedStable = matchedStableValues.slice(0, 2);
-      const top2ReorderedValues = moralValuesReorderList.slice(0, 2);
+      // Realignment = CVR "Yes" answer + APA reordering where top 2 values changed
+      const top2MatchedStable = matchedStableValues.slice(0, 2).sort();
+      const top2ReorderedValues = moralValuesReorderList.slice(0, 2).sort();
       const hasReorderedValues = moralValuesReorder && moralValuesReorderList.length > 0;
+
+      // Check if top 2 changed (compare sorted arrays)
       const top2Changed = hasReorderedValues && (
         top2ReorderedValues[0] !== top2MatchedStable[0] ||
         top2ReorderedValues[1] !== top2MatchedStable[1]
@@ -239,18 +247,15 @@ const ResultsFeedbackPage: React.FC = () => {
         const cvrYesAnswered = scenarioEvents.some(e => e.event === 'cvr_answered' && e.cvrAnswer === true);
         const hadApa = scenarioEvents.some(e => e.event === 'apa_reordered');
 
-        // Check final choice value
-        const outcome = simulationOutcomes[index];
-        const finalChoiceValue = (outcome.decision.label || '').toLowerCase();
-        const chosenFromTop2Reordered = top2ReorderedValues.includes(finalChoiceValue);
-
-        // Realignment occurs when: CVR Yes + chose from top 2 reordered + top 2 changed
-        if (cvrYesAnswered && chosenFromTop2Reordered && top2Changed) {
+        // Realignment switch happens when:
+        // 1. User answers "Yes, I would" in CVR question
+        // 2. User did APA reordering where top 2 values are different from matchedStableValues top 2
+        if (cvrYesAnswered && hadApa && top2Changed) {
           realignAfterCvrApaCount++;
         }
 
-        // Misalignment after CVR/APA: had CVR or APA but final choice is not aligned
-        if ((cvrYesAnswered || hadApa) && !scenario.aligned) {
+        // Misalignment after CVR/APA: had CVR "Yes" answer (indicates misalignment)
+        if (cvrYesAnswered) {
           misalignAfterCvrApaCount++;
         }
       });
