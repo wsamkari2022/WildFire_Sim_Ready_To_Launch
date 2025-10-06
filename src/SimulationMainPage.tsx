@@ -854,11 +854,21 @@ const SimulationMainPage: React.FC = () => {
         </div>
         
         <MetricsDisplay metrics={metrics} animatingMetrics={animatingMetrics} />
-        
+
         <div className="bg-white rounded-lg shadow-md p-4 flex-1 flex flex-col overflow-hidden">
           <h2 className="text-lg font-semibold mb-1 text-gray-700">Current Scenario</h2>
           <h3 className="text-base font-medium mb-1 text-gray-800">{currentScenario.title}</h3>
           <p className="text-sm text-gray-600 mb-3">{currentScenario.description}</p>
+
+          {/* Debug message for FinalTopTwoValues */}
+          <div className="mb-3 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+            <p className="text-sm font-semibold text-yellow-800 mb-1">🐛 Debug: FinalTopTwoValues</p>
+            <p className="text-xs text-yellow-700">
+              {finalTopTwoValues.length > 0
+                ? `[${finalTopTwoValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                : 'Empty - Not initialized yet'}
+            </p>
+          </div>
 
           {!selectedDecision ? (
             <>
