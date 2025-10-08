@@ -57,8 +57,59 @@ const SimulationMainPage: React.FC = () => {
   const [isFromRankedView, setIsFromRankedView] = useState(false);
   const [showAlternativeNotification, setShowAlternativeNotification] = useState(false);
   const [finalTopTwoValues, setFinalTopTwoValues] = useState<string[]>([]);
+  const [debugFinalValues, setDebugFinalValues] = useState<string[]>([]);
+  const [debugMoralValuesReorder, setDebugMoralValuesReorder] = useState<string[]>([]);
 
   const currentScenario = scenarios[currentScenarioIndex];
+
+  // Monitor and update debug values for all lists
+  useEffect(() => {
+    const updateDebugValues = () => {
+      // Update debugFinalValues
+      const savedFinalValues = localStorage.getItem('finalValues');
+      if (savedFinalValues) {
+        try {
+          const parsed = JSON.parse(savedFinalValues);
+          const values = parsed.map((v: any) => v.name.toLowerCase());
+          setDebugFinalValues(values);
+        } catch (error) {
+          setDebugFinalValues([]);
+        }
+      }
+
+      // Update debugMoralValuesReorder
+      const savedMoralValuesReorder = localStorage.getItem('MoralValuesReorderList');
+      if (savedMoralValuesReorder) {
+        try {
+          const parsed = JSON.parse(savedMoralValuesReorder);
+          const values = parsed.map((v: any) => v.id.toLowerCase());
+          setDebugMoralValuesReorder(values);
+        } catch (error) {
+          setDebugMoralValuesReorder([]);
+        }
+      } else {
+        setDebugMoralValuesReorder([]);
+      }
+
+      // Update FinalTopTwoValues from localStorage
+      const savedFinalTopTwo = localStorage.getItem('FinalTopTwoValues');
+      if (savedFinalTopTwo) {
+        try {
+          const parsed = JSON.parse(savedFinalTopTwo);
+          setFinalTopTwoValues(parsed);
+        } catch (error) {
+          // Keep current state
+        }
+      }
+    };
+
+    updateDebugValues();
+
+    // Set up an interval to check for updates during the scenario
+    const interval = setInterval(updateDebugValues, 500);
+
+    return () => clearInterval(interval);
+  }, [currentScenarioIndex, selectedDecision]);
 
   // Reset hasExploredAlternatives when scenario changes
   useEffect(() => {
@@ -845,13 +896,44 @@ const SimulationMainPage: React.FC = () => {
           <h3 className="text-base font-medium mb-1 text-gray-800">{currentScenario.title}</h3>
           <p className="text-sm text-gray-600 mb-3">{currentScenario.description}</p>
 
-          {/* Debug message for FinalTopTwoValues */}
-          <div className="mb-3 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-            <p className="text-sm font-semibold text-yellow-800 mb-1">🐛 Debug: FinalTopTwoValues</p>
-            <p className="text-xs text-yellow-700">
-              {finalTopTwoValues.length > 0
-                ? `[${finalTopTwoValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                : 'Empty - Not initialized yet'}
+          {/* Enhanced Debug Panel */}
+          <div className="mb-3 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+            <p className="text-sm font-bold text-yellow-900 mb-3">🐛 Debug Panel - Value Lists</p>
+
+            <div className="space-y-2">
+              {/* finalValues */}
+              <div className="bg-white p-2 rounded border border-yellow-200">
+                <p className="text-xs font-semibold text-gray-700 mb-1">finalValues:</p>
+                <p className="text-xs text-gray-600 font-mono">
+                  {debugFinalValues.length > 0
+                    ? `[${debugFinalValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                    : '[ Empty ]'}
+                </p>
+              </div>
+
+              {/* MoralValuesReorderList */}
+              <div className="bg-white p-2 rounded border border-yellow-200">
+                <p className="text-xs font-semibold text-gray-700 mb-1">MoralValuesReorderList:</p>
+                <p className="text-xs text-gray-600 font-mono">
+                  {debugMoralValuesReorder.length > 0
+                    ? `[${debugMoralValuesReorder.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                    : '[ Empty - Not reordered yet ]'}
+                </p>
+              </div>
+
+              {/* FinalTopTwoValues */}
+              <div className="bg-green-50 p-2 rounded border-2 border-green-400">
+                <p className="text-xs font-bold text-green-800 mb-1">FinalTopTwoValues (Active):</p>
+                <p className="text-xs text-green-700 font-mono font-semibold">
+                  {finalTopTwoValues.length > 0
+                    ? `[${finalTopTwoValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                    : '[ Empty - Not initialized yet ]'}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-yellow-600 mt-3 italic">
+              ⚡ Updates automatically during scenario
             </p>
           </div>
 
