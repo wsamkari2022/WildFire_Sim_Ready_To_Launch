@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Minus, Users, Skull, Droplets, Building, Trees as Tree, Factory, ChevronDown } from 'lucide-react';
+import { X, Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, Minus, Users, Skull, Droplets, Building, Trees as Tree, Factory, ChevronDown, AlertCircle } from 'lucide-react';
 import { DecisionOption } from '../types';
 
 interface ExpertAnalysisModalProps {
@@ -9,6 +9,7 @@ interface ExpertAnalysisModalProps {
   onKeepChoice: () => void;
   onReviewAlternatives: () => void;
   isAligned: boolean;
+  hasExploredAlternatives: boolean;
 }
 
 const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
@@ -17,7 +18,8 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
   option,
   onKeepChoice,
   onReviewAlternatives,
-  isAligned
+  isAligned,
+  hasExploredAlternatives
 }) => {
   const [showScrollIndicator, setShowScrollIndicator] = React.useState(true);
   const [scrollContainerRef, setScrollContainerRef] = React.useState<HTMLDivElement | null>(null);
@@ -317,16 +319,55 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
 
         {/* Footer */}
         <div className="border-t border-gray-200 p-6 bg-gradient-to-r from-gray-50 to-white rounded-b-xl">
+          {/* Warning message when alternatives not explored */}
+          {!hasExploredAlternatives && (
+            <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg relative">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center animate-pulse">
+                    <AlertCircle className="text-white" size={18} />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-orange-800 mb-1">
+                    Action Required
+                  </p>
+                  <p className="text-xs text-orange-700">
+                    Please review the alternative options before you can keep this choice. This helps ensure you're making an informed decision.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-4">
-            <button
-              onClick={onReviewAlternatives}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium flex items-center gap-2"
-            >
-              <span>Review Alternatives</span>
-            </button>
+            {hasExploredAlternatives && (
+              <button
+                onClick={onReviewAlternatives}
+                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium flex items-center gap-2"
+              >
+                <span>Review Alternatives</span>
+              </button>
+            )}
+
+            {!hasExploredAlternatives && (
+              <button
+                onClick={onReviewAlternatives}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center gap-2 animate-pulse border-2 border-purple-300"
+              >
+                <span>Review Alternatives</span>
+              </button>
+            )}
+
             <button
               onClick={onKeepChoice}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl flex items-center gap-2"
+              disabled={!hasExploredAlternatives}
+              className={`px-6 py-3 rounded-lg transition-all duration-200 font-medium shadow-lg flex items-center gap-2 ${
+                hasExploredAlternatives
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+              }`}
+              title={!hasExploredAlternatives ? "Review alternatives to enable this option" : ""}
             >
               <span>Keep My Choice</span>
             </button>

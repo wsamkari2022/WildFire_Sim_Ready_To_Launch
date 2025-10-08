@@ -1059,6 +1059,7 @@ const SimulationMainPage: React.FC = () => {
         onKeepChoice={handleKeepChoice}
         onReviewAlternatives={handleReviewAlternatives}
         isAligned={tempSelectedOption ? matchedStableValues.includes(tempSelectedOption.label.toLowerCase()) : false}
+        hasExploredAlternatives={hasExploredAlternatives}
       />
 
       <DecisionSummaryModal
