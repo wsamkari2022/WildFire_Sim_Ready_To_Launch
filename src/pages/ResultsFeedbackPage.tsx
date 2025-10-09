@@ -677,6 +677,223 @@ const ResultsFeedbackPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Debug Tracking Table */}
+        <div className="bg-yellow-50 rounded-lg shadow-lg p-6 mb-8 border-2 border-yellow-400">
+          <h3 className="text-lg font-semibold text-yellow-900 mb-4 flex items-center">
+            <Activity className="h-5 w-5 mr-2" />
+            🐛 Debug Tracking - Comprehensive Scenario Behavior
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-yellow-300 bg-white rounded-lg">
+              <thead className="bg-yellow-100">
+                <tr>
+                  <th className="px-3 py-3 text-left text-xs font-bold text-yellow-900 uppercase border-r border-yellow-300">
+                    Scenario
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-bold text-yellow-900 uppercase border-r border-yellow-300">
+                    Value Lists Used
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-bold text-yellow-900 uppercase border-r border-yellow-300">
+                    Final Decision Label
+                  </th>
+                  <th className="px-3 py-3 text-center text-xs font-bold text-yellow-900 uppercase border-r border-yellow-300">
+                    Alignment Status
+                  </th>
+                  <th className="px-3 py-3 text-center text-xs font-bold text-yellow-900 uppercase border-r border-yellow-300">
+                    Flags at Confirmation
+                  </th>
+                  <th className="px-3 py-3 text-center text-xs font-bold text-yellow-900 uppercase">
+                    Interaction Counters
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-yellow-200">
+                {(() => {
+                  const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
+                  const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
+                  const finalValues = (() => {
+                    try {
+                      const saved = localStorage.getItem('finalValues');
+                      if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return parsed.map((v: any) => (v.name || v).toString());
+                      }
+                    } catch (e) {}
+                    return [];
+                  })();
+                  const moralValuesReorder = (() => {
+                    try {
+                      const saved = localStorage.getItem('MoralValuesReorderList');
+                      if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return parsed.map((v: any) => (v.id || v.name || v).toString());
+                      }
+                    } catch (e) {}
+                    return [];
+                  })();
+
+                  return metrics.scenarioDetails.map((scenario, index) => {
+                    const scenarioId = scenario.scenarioId;
+                    const decisionLabel = scenariosFinalDecisionLabels[index] || 'N/A';
+                    const alignmentStatus = checkingAlignmentList[index] || 'Unknown';
+                    const valueListUsed = scenarioId === 1 ? finalValues : moralValuesReorder;
+                    const valueListName = scenarioId === 1 ? 'finalValues' : 'MoralValuesReorderList';
+
+                    const allEvents = TrackingManager.getAllEvents();
+                    const scenarioEvents = allEvents.filter(e => e.scenarioId === scenarioId);
+
+                    const hadCvrYes = scenarioEvents.some(e => e.event === 'cvr_answered' && e.cvrAnswer === true);
+                    const hadCvrNo = scenarioEvents.some(e => e.event === 'cvr_answered' && e.cvrAnswer === false);
+                    const hadApaReorder = scenarioEvents.some(e => e.event === 'apa_reordered');
+
+                    const cvrYesCount = scenarioEvents.filter(e => e.event === 'cvr_answered' && e.cvrAnswer === true).length;
+                    const cvrNoCount = scenarioEvents.filter(e => e.event === 'cvr_answered' && e.cvrAnswer === false).length;
+                    const apaReorderCount = scenarioEvents.filter(e => e.event === 'apa_reordered').length;
+                    const optionSwitches = Math.max(0, scenarioEvents.filter(e => e.event === 'option_selected').length - 1);
+
+                    return (
+                      <tr key={index} className="hover:bg-yellow-50">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-yellow-200">
+                          Scenario {scenarioId}
+                        </td>
+                        <td className="px-3 py-4 text-xs border-r border-yellow-200">
+                          <div className="space-y-2">
+                            <div className="bg-blue-50 p-2 rounded border border-blue-200">
+                              <p className="font-bold text-blue-900 mb-1">{valueListName}:</p>
+                              <p className="text-blue-700 font-mono break-words">
+                                {valueListUsed.length > 0
+                                  ? `[${valueListUsed.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                                  : '[ Empty ]'
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm border-r border-yellow-200">
+                          <div className="bg-cyan-50 px-3 py-2 rounded border border-cyan-300 inline-block">
+                            <span className="font-bold text-cyan-900">
+                              {decisionLabel.charAt(0).toUpperCase() + decisionLabel.slice(1)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-center border-r border-yellow-200">
+                          <div className={`inline-flex items-center px-3 py-1 rounded-full font-bold text-sm ${
+                            alignmentStatus === 'Aligned'
+                              ? 'bg-green-100 text-green-800 border-2 border-green-400'
+                              : 'bg-red-100 text-red-800 border-2 border-red-400'
+                          }`}>
+                            {alignmentStatus === 'Aligned' ? (
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                            ) : (
+                              <XCircle className="h-4 w-4 mr-1" />
+                            )}
+                            {alignmentStatus}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 border-r border-yellow-200">
+                          <div className="space-y-1 text-xs">
+                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                              hadApaReorder ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              <span className="font-semibold">APA Reordered:</span>
+                              <span className="ml-2 font-bold">{hadApaReorder ? '✓ Yes' : '✗ No'}</span>
+                            </div>
+                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                              hadCvrYes ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              <span className="font-semibold">CVR "Yes":</span>
+                              <span className="ml-2 font-bold">{hadCvrYes ? '✓ Yes' : '✗ No'}</span>
+                            </div>
+                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                              hadCvrNo ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              <span className="font-semibold">CVR "No":</span>
+                              <span className="ml-2 font-bold">{hadCvrNo ? '✓ Yes' : '✗ No'}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="space-y-1 text-xs">
+                            <div className="flex items-center justify-between px-2 py-1 bg-purple-50 rounded">
+                              <span className="font-semibold text-purple-900">APA Reorders:</span>
+                              <span className="ml-2 font-bold text-purple-700">{apaReorderCount}</span>
+                            </div>
+                            <div className="flex items-center justify-between px-2 py-1 bg-green-50 rounded">
+                              <span className="font-semibold text-green-900">CVR "Yes":</span>
+                              <span className="ml-2 font-bold text-green-700">{cvrYesCount}</span>
+                            </div>
+                            <div className="flex items-center justify-between px-2 py-1 bg-red-50 rounded">
+                              <span className="font-semibold text-red-900">CVR "No":</span>
+                              <span className="ml-2 font-bold text-red-700">{cvrNoCount}</span>
+                            </div>
+                            <div className="flex items-center justify-between px-2 py-1 bg-orange-50 rounded">
+                              <span className="font-semibold text-orange-900">Switches:</span>
+                              <span className="ml-2 font-bold text-orange-700">{optionSwitches}</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  });
+                })()}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Summary Footer */}
+          <div className="mt-4 pt-4 border-t-2 border-yellow-400">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-3 rounded-lg border border-yellow-300">
+                <p className="text-xs font-semibold text-gray-600 mb-2">Session Totals</p>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Total CVR Arrivals:</span>
+                    <span className="font-bold text-blue-700">{metrics.cvrArrivals}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Total APA Reorderings:</span>
+                    <span className="font-bold text-purple-700">{metrics.apaReorderings}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Total Switches:</span>
+                    <span className="font-bold text-orange-700">{metrics.switchCountTotal}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-3 rounded-lg border border-yellow-300">
+                <p className="text-xs font-semibold text-gray-600 mb-2">CVR Response Summary</p>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">"Yes, I would" answers:</span>
+                    <span className="font-bold text-green-700">{metrics.cvrYesCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">"No, I would not" answers:</span>
+                    <span className="font-bold text-red-700">{metrics.cvrNoCount}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-3 rounded-lg border border-yellow-300">
+                <p className="text-xs font-semibold text-gray-600 mb-2">Alignment Summary</p>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Aligned Decisions:</span>
+                    <span className="font-bold text-green-700">
+                      {metrics.finalAlignmentByScenario.filter(Boolean).length} / {metrics.finalAlignmentByScenario.length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Value Consistency:</span>
+                    <span className="font-bold text-blue-700">{(metrics.valueConsistencyIndex * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Feedback Sliders */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-6 flex items-center">
