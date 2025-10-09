@@ -60,6 +60,8 @@ const SimulationMainPage: React.FC = () => {
   const [debugFinalValues, setDebugFinalValues] = useState<string[]>([]);
   const [debugMoralValuesReorder, setDebugMoralValuesReorder] = useState<string[]>([]);
   const [hasReorderedValues, setHasReorderedValues] = useState<boolean>(false);
+  const [cvrYesClicked, setCvrYesClicked] = useState<boolean>(false);
+  const [cvrNoClicked, setCvrNoClicked] = useState<boolean>(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -124,6 +126,10 @@ const SimulationMainPage: React.FC = () => {
     // Reset hasReorderedValues flag for new scenario
     localStorage.setItem('hasReorderedValues', 'false');
     setHasReorderedValues(false);
+
+    // Reset CVR flags for new scenario
+    setCvrYesClicked(false);
+    setCvrNoClicked(false);
 
     // Initialize flag for first scenario
     if (currentScenarioIndex === 0) {
@@ -539,6 +545,15 @@ const SimulationMainPage: React.FC = () => {
   const handleCVRAnswer = (answer: boolean) => {
     setShowCVRModal(false);
 
+    // Set CVR flags based on answer
+    if (answer) {
+      setCvrYesClicked(true);
+      setCvrNoClicked(false);
+    } else {
+      setCvrYesClicked(false);
+      setCvrNoClicked(true);
+    }
+
     // Track CVR answer
     if (selectedDecision) {
       TrackingManager.recordCVRAnswer(
@@ -947,6 +962,26 @@ const SimulationMainPage: React.FC = () => {
                 </p>
                 <p className={`text-xs font-mono font-semibold ${hasReorderedValues ? 'text-blue-700' : 'text-gray-600'}`}>
                   {hasReorderedValues ? '✓ true' : '✗ false'}
+                </p>
+              </div>
+
+              {/* CVR Yes Clicked Flag */}
+              <div className={`p-2 rounded border-2 ${cvrYesClicked ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-300'}`}>
+                <p className={`text-xs font-bold mb-1 ${cvrYesClicked ? 'text-green-800' : 'text-gray-600'}`}>
+                  cvrYesClicked:
+                </p>
+                <p className={`text-xs font-mono font-semibold ${cvrYesClicked ? 'text-green-700' : 'text-gray-600'}`}>
+                  {cvrYesClicked ? '✓ true (Yes, I would)' : '✗ false'}
+                </p>
+              </div>
+
+              {/* CVR No Clicked Flag */}
+              <div className={`p-2 rounded border-2 ${cvrNoClicked ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-300'}`}>
+                <p className={`text-xs font-bold mb-1 ${cvrNoClicked ? 'text-red-800' : 'text-gray-600'}`}>
+                  cvrNoClicked:
+                </p>
+                <p className={`text-xs font-mono font-semibold ${cvrNoClicked ? 'text-red-700' : 'text-gray-600'}`}>
+                  {cvrNoClicked ? '✓ true (No, I wouldn\'t)' : '✗ false'}
                 </p>
               </div>
             </div>
