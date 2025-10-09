@@ -65,6 +65,8 @@ const SimulationMainPage: React.FC = () => {
   const [hasReorderedValuesCount, setHasReorderedValuesCount] = useState<number>(0);
   const [cvrYesClickedCount, setCvrYesClickedCount] = useState<number>(0);
   const [cvrNoClickedCount, setCvrNoClickedCount] = useState<number>(0);
+  const [simulationMetricsSelectedCount, setSimulationMetricsSelectedCount] = useState<number>(0);
+  const [moralValuesSelectedCount, setMoralValuesSelectedCount] = useState<number>(0);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -121,6 +123,12 @@ const SimulationMainPage: React.FC = () => {
 
       const noCount = localStorage.getItem('cvrNoClickedCount');
       setCvrNoClickedCount(noCount ? parseInt(noCount) : 0);
+
+      const metricsCount = localStorage.getItem('simulationMetricsSelectedCount');
+      setSimulationMetricsSelectedCount(metricsCount ? parseInt(metricsCount) : 0);
+
+      const valuesCount = localStorage.getItem('moralValuesSelectedCount');
+      setMoralValuesSelectedCount(valuesCount ? parseInt(valuesCount) : 0);
     };
 
     updateDebugValues();
@@ -1029,6 +1037,26 @@ const SimulationMainPage: React.FC = () => {
                 </p>
                 <p className="text-xs font-mono text-red-600 mt-1">
                   Count: {cvrNoClickedCount}
+                </p>
+              </div>
+
+              {/* Simulation Metrics Selected Counter */}
+              <div className="p-2 rounded border-2 bg-indigo-50 border-indigo-400">
+                <p className="text-xs font-bold mb-1 text-indigo-800">
+                  Simulation Metrics Selected:
+                </p>
+                <p className="text-xs font-mono font-semibold text-indigo-700">
+                  Count: {simulationMetricsSelectedCount}
+                </p>
+              </div>
+
+              {/* Moral Values Selected Counter */}
+              <div className="p-2 rounded border-2 bg-purple-50 border-purple-400">
+                <p className="text-xs font-bold mb-1 text-purple-800">
+                  Moral Values Selected:
+                </p>
+                <p className="text-xs font-mono font-semibold text-purple-700">
+                  Count: {moralValuesSelectedCount}
                 </p>
               </div>
             </div>
