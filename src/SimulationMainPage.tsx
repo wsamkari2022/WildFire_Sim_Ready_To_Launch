@@ -67,6 +67,8 @@ const SimulationMainPage: React.FC = () => {
   const [cvrNoClickedCount, setCvrNoClickedCount] = useState<number>(0);
   const [simulationMetricsSelectedCount, setSimulationMetricsSelectedCount] = useState<number>(0);
   const [moralValuesSelectedCount, setMoralValuesSelectedCount] = useState<number>(0);
+  const [scenariosFinalDecisionLabels, setScenariosFinalDecisionLabels] = useState<string[]>([]);
+  const [checkingAlignmentList, setCheckingAlignmentList] = useState<string[]>([]);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -129,6 +131,28 @@ const SimulationMainPage: React.FC = () => {
 
       const valuesCount = localStorage.getItem('moralValuesSelectedCount');
       setMoralValuesSelectedCount(valuesCount ? parseInt(valuesCount) : 0);
+
+      // Update ScenariosFinalDecisionLabels from localStorage
+      const savedDecisionLabels = localStorage.getItem('ScenariosFinalDecisionLabels');
+      if (savedDecisionLabels) {
+        try {
+          const parsed = JSON.parse(savedDecisionLabels);
+          setScenariosFinalDecisionLabels(parsed);
+        } catch (error) {
+          setScenariosFinalDecisionLabels([]);
+        }
+      }
+
+      // Update CheckingAlignmentList from localStorage
+      const savedAlignmentList = localStorage.getItem('CheckingAlignmentList');
+      if (savedAlignmentList) {
+        try {
+          const parsed = JSON.parse(savedAlignmentList);
+          setCheckingAlignmentList(parsed);
+        } catch (error) {
+          setCheckingAlignmentList([]);
+        }
+      }
     };
 
     updateDebugValues();
@@ -726,10 +750,26 @@ const SimulationMainPage: React.FC = () => {
     const isAligned = matchedStableValues.includes(optionValue);
     TrackingManager.confirmOption(selectedDecision.id, selectedDecision.label, isAligned, newMetrics);
 
-    // Update FinalTopTwoValues after confirming decision
-    // Add the final decision value at the top of the list
+    // BEFORE updating FinalTopTwoValues, track the final decision value and check alignment
     const finalDecisionValue = selectedDecision.label.toLowerCase();
 
+    // 1. Add to ScenariosFinalDecisionLabels list
+    const updatedDecisionLabels = [...scenariosFinalDecisionLabels, finalDecisionValue];
+    setScenariosFinalDecisionLabels(updatedDecisionLabels);
+    localStorage.setItem('ScenariosFinalDecisionLabels', JSON.stringify(updatedDecisionLabels));
+
+    // 2. Check alignment BEFORE updating FinalTopTwoValues
+    const alignmentStatus = finalTopTwoValues.includes(finalDecisionValue) ? 'Aligned' : 'Misaligned';
+    const updatedAlignmentList = [...checkingAlignmentList, alignmentStatus];
+    setCheckingAlignmentList(updatedAlignmentList);
+    localStorage.setItem('CheckingAlignmentList', JSON.stringify(updatedAlignmentList));
+
+    console.log(`Scenario ${currentScenario.id} - Final Decision: ${finalDecisionValue}, Alignment: ${alignmentStatus}`);
+    console.log('Current FinalTopTwoValues (before update):', finalTopTwoValues);
+    console.log('Updated ScenariosFinalDecisionLabels:', updatedDecisionLabels);
+    console.log('Updated CheckingAlignmentList:', updatedAlignmentList);
+
+    // Update FinalTopTwoValues after confirming decision
     // Remove the decision value if it already exists in the list, then add it to the top
     const updatedTopTwoValues = [
       finalDecisionValue,
@@ -1057,6 +1097,33 @@ const SimulationMainPage: React.FC = () => {
                 </p>
                 <p className="text-xs font-mono font-semibold text-purple-700">
                   Count: {moralValuesSelectedCount}
+                </p>
+              </div>
+
+              {/* ScenariosFinalDecisionLabels */}
+              <div className="bg-cyan-50 p-2 rounded border-2 border-cyan-400">
+                <p className="text-xs font-bold text-cyan-800 mb-1">ScenariosFinalDecisionLabels (NEW):</p>
+                <p className="text-xs text-cyan-700 font-mono font-semibold">
+                  {scenariosFinalDecisionLabels.length > 0
+                    ? `[${scenariosFinalDecisionLabels.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                    : '[ Empty - No decisions confirmed yet ]'}
+                </p>
+                <p className="text-xs text-cyan-600 mt-1">
+                  Count: {scenariosFinalDecisionLabels.length} / 3 scenarios
+                </p>
+              </div>
+
+              {/* CheckingAlignmentList */}
+              <div className="bg-orange-50 p-2 rounded border-2 border-orange-400">
+                <p className="text-xs font-bold text-orange-800 mb-1">CheckingAlignmentList (NEW):</p>
+                <p className="text-xs text-orange-700 font-mono font-semibold">
+                  {checkingAlignmentList.length > 0
+                    ? `[${checkingAlignmentList.join(', ')}]`
+                    : '[ Empty - No decisions confirmed yet ]'}
+                </p>
+                <p className="text-xs text-orange-600 mt-1">
+                  Aligned: {checkingAlignmentList.filter(s => s === 'Aligned').length} |
+                  Misaligned: {checkingAlignmentList.filter(s => s === 'Misaligned').length}
                 </p>
               </div>
             </div>

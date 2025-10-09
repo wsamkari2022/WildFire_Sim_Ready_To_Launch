@@ -98,6 +98,8 @@ export interface SessionFeedback {
   apa_reorderings?: number;
   total_switches?: number;
   avg_decision_time?: number;
+  scenarios_final_decision_labels?: string[];
+  checking_alignment_list?: string[];
 }
 
 export class DatabaseService {

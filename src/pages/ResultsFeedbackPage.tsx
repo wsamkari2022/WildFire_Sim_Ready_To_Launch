@@ -352,6 +352,11 @@ const ResultsFeedbackPage: React.FC = () => {
     localStorage.setItem('sessionEventLogs', JSON.stringify(existingLogs));
 
     const sessionId = DatabaseService.getSessionId();
+
+    // Retrieve the tracking lists from localStorage
+    const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
+    const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
+
     await DatabaseService.insertSessionFeedback({
       session_id: sessionId,
       decision_satisfaction: feedback.decisionSatisfaction,
@@ -366,7 +371,9 @@ const ResultsFeedbackPage: React.FC = () => {
       cvr_no_count: metrics.cvrNoCount,
       apa_reorderings: metrics.apaReorderings,
       total_switches: metrics.switchCountTotal,
-      avg_decision_time: metrics.avgDecisionTime
+      avg_decision_time: metrics.avgDecisionTime,
+      scenarios_final_decision_labels: scenariosFinalDecisionLabels,
+      checking_alignment_list: checkingAlignmentList
     });
 
     await DatabaseService.updateUserSession(sessionId, {

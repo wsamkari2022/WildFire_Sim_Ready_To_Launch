@@ -69,6 +69,8 @@ export interface SessionDVs {
     apaReordered: boolean;
     apaReorderCount: number;
   }>;
+  scenariosFinalDecisionLabels?: string[];
+  checkingAlignmentList?: string[];
   decisionSatisfaction?: number;
   processSatisfaction?: number;
   perceivedTransparency?: number;
