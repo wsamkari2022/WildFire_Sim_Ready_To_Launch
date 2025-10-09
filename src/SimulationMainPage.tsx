@@ -60,6 +60,7 @@ const SimulationMainPage: React.FC = () => {
   const [debugFinalValues, setDebugFinalValues] = useState<string[]>([]);
   const [debugMoralValuesReorder, setDebugMoralValuesReorder] = useState<string[]>([]);
   const [hasReorderedValues, setHasReorderedValues] = useState<boolean>(false);
+  const [hasAnsweredYesCVR, setHasAnsweredYesCVR] = useState<boolean>(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -106,6 +107,10 @@ const SimulationMainPage: React.FC = () => {
       // Update hasReorderedValues flag
       const reorderedFlag = localStorage.getItem('hasReorderedValues');
       setHasReorderedValues(reorderedFlag === 'true');
+
+      // Update hasAnsweredYesCVR flag
+      const cvrFlag = localStorage.getItem('hasAnsweredYesCVR');
+      setHasAnsweredYesCVR(cvrFlag === 'true');
     };
 
     updateDebugValues();
@@ -124,6 +129,10 @@ const SimulationMainPage: React.FC = () => {
     // Reset hasReorderedValues flag for new scenario
     localStorage.setItem('hasReorderedValues', 'false');
     setHasReorderedValues(false);
+
+    // Reset hasAnsweredYesCVR flag for new scenario
+    localStorage.setItem('hasAnsweredYesCVR', 'false');
+    setHasAnsweredYesCVR(false);
 
     // Initialize flag for first scenario
     if (currentScenarioIndex === 0) {
@@ -539,6 +548,12 @@ const SimulationMainPage: React.FC = () => {
   const handleCVRAnswer = (answer: boolean) => {
     setShowCVRModal(false);
 
+    // Track CVR answer and set flag
+    if (answer) {
+      setHasAnsweredYesCVR(true);
+      localStorage.setItem('hasAnsweredYesCVR', 'true');
+    }
+
     // Track CVR answer
     if (selectedDecision) {
       TrackingManager.recordCVRAnswer(
@@ -947,6 +962,16 @@ const SimulationMainPage: React.FC = () => {
                 </p>
                 <p className={`text-xs font-mono font-semibold ${hasReorderedValues ? 'text-blue-700' : 'text-gray-600'}`}>
                   {hasReorderedValues ? '✓ true' : '✗ false'}
+                </p>
+              </div>
+
+              {/* hasAnsweredYesCVR Flag */}
+              <div className={`p-2 rounded border-2 ${hasAnsweredYesCVR ? 'bg-purple-50 border-purple-400' : 'bg-gray-50 border-gray-300'}`}>
+                <p className={`text-xs font-bold mb-1 ${hasAnsweredYesCVR ? 'text-purple-800' : 'text-gray-600'}`}>
+                  hasAnsweredYesCVR:
+                </p>
+                <p className={`text-xs font-mono font-semibold ${hasAnsweredYesCVR ? 'text-purple-700' : 'text-gray-600'}`}>
+                  {hasAnsweredYesCVR ? '✓ true' : '✗ false'}
                 </p>
               </div>
             </div>
