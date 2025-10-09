@@ -755,7 +755,16 @@ const SimulationMainPage: React.FC = () => {
       cvrNoClicked: localStorage.getItem('cvrNoClicked') === 'true'
     };
 
-    TrackingManager.confirmOption(selectedDecision.id, selectedDecision.label, isAligned, newMetrics, flagsAtConfirmation);
+    const finalTopTwoValuesBeforeUpdate = [...finalTopTwoValues];
+
+    TrackingManager.confirmOption(
+      selectedDecision.id,
+      selectedDecision.label,
+      isAligned,
+      newMetrics,
+      flagsAtConfirmation,
+      finalTopTwoValuesBeforeUpdate
+    );
 
     // BEFORE updating FinalTopTwoValues, track the final decision value and check alignment
     const finalDecisionValue = selectedDecision.label.toLowerCase();

@@ -20,6 +20,7 @@ export interface TelemetryEvent {
     cvrYesClicked: boolean;
     cvrNoClicked: boolean;
   };
+  finalTopTwoValuesBeforeUpdate?: string[];
 }
 
 export interface ScenarioTracking {

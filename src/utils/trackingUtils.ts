@@ -120,7 +120,8 @@ export class TrackingManager {
       hasReorderedValues: boolean;
       cvrYesClicked: boolean;
       cvrNoClicked: boolean;
-    }
+    },
+    finalTopTwoValuesBeforeUpdate?: string[]
   ) {
     if (!this.currentScenarioTracking) return;
 
@@ -143,7 +144,8 @@ export class TrackingManager {
       alignedAfter: aligned,
       timeSinceScenarioOpen: timeSinceStart,
       objectivesSnapshot: objectives,
-      flagsAtConfirmation
+      flagsAtConfirmation,
+      finalTopTwoValuesBeforeUpdate
     });
   }
 

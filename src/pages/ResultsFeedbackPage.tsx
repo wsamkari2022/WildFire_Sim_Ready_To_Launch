@@ -770,6 +770,15 @@ const ResultsFeedbackPage: React.FC = () => {
                                 }
                               </p>
                             </div>
+                            <div className="bg-green-50 p-2 rounded border-2 border-green-400">
+                              <p className="font-bold text-green-900 mb-1">FinalTopTwoValues:</p>
+                              <p className="text-green-700 font-mono break-words">
+                                {confirmationEvent?.finalTopTwoValuesBeforeUpdate && confirmationEvent.finalTopTwoValuesBeforeUpdate.length > 0
+                                  ? `[${confirmationEvent.finalTopTwoValuesBeforeUpdate.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                                  : '[ Empty ]'
+                                }
+                              </p>
+                            </div>
                           </div>
                         </td>
                         <td className="px-3 py-4 text-sm border-r border-yellow-200">
