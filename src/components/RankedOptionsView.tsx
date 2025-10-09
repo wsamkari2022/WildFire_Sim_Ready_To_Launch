@@ -181,6 +181,11 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
       // Set flag indicating user has reordered their values
       localStorage.setItem('hasReorderedValues', 'true');
 
+      // Increment counter for hasReorderedValues
+      const currentCount = localStorage.getItem('hasReorderedValuesCount');
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
+      localStorage.setItem('hasReorderedValuesCount', newCount.toString());
+
       onConfirm(selectedOption, isTop2);
     }
   };

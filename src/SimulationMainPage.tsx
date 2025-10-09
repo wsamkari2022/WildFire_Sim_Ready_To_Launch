@@ -62,6 +62,9 @@ const SimulationMainPage: React.FC = () => {
   const [hasReorderedValues, setHasReorderedValues] = useState<boolean>(false);
   const [cvrYesClicked, setCvrYesClicked] = useState<boolean>(false);
   const [cvrNoClicked, setCvrNoClicked] = useState<boolean>(false);
+  const [hasReorderedValuesCount, setHasReorderedValuesCount] = useState<number>(0);
+  const [cvrYesClickedCount, setCvrYesClickedCount] = useState<number>(0);
+  const [cvrNoClickedCount, setCvrNoClickedCount] = useState<number>(0);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -108,6 +111,16 @@ const SimulationMainPage: React.FC = () => {
       // Update hasReorderedValues flag
       const reorderedFlag = localStorage.getItem('hasReorderedValues');
       setHasReorderedValues(reorderedFlag === 'true');
+
+      // Update counters from localStorage
+      const reorderedCount = localStorage.getItem('hasReorderedValuesCount');
+      setHasReorderedValuesCount(reorderedCount ? parseInt(reorderedCount) : 0);
+
+      const yesCount = localStorage.getItem('cvrYesClickedCount');
+      setCvrYesClickedCount(yesCount ? parseInt(yesCount) : 0);
+
+      const noCount = localStorage.getItem('cvrNoClickedCount');
+      setCvrNoClickedCount(noCount ? parseInt(noCount) : 0);
     };
 
     updateDebugValues();
@@ -553,11 +566,23 @@ const SimulationMainPage: React.FC = () => {
       setCvrNoClicked(false);
       localStorage.setItem('cvrYesClicked', 'true');
       localStorage.setItem('cvrNoClicked', 'false');
+
+      // Increment counter for cvrYesClicked
+      const currentCount = localStorage.getItem('cvrYesClickedCount');
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
+      localStorage.setItem('cvrYesClickedCount', newCount.toString());
+      setCvrYesClickedCount(newCount);
     } else {
       setCvrYesClicked(false);
       setCvrNoClicked(true);
       localStorage.setItem('cvrYesClicked', 'false');
       localStorage.setItem('cvrNoClicked', 'true');
+
+      // Increment counter for cvrNoClicked
+      const currentCount = localStorage.getItem('cvrNoClickedCount');
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
+      localStorage.setItem('cvrNoClickedCount', newCount.toString());
+      setCvrNoClickedCount(newCount);
     }
 
     // Track CVR answer
@@ -976,6 +1001,9 @@ const SimulationMainPage: React.FC = () => {
                 <p className={`text-xs font-mono font-semibold ${hasReorderedValues ? 'text-blue-700' : 'text-gray-600'}`}>
                   {hasReorderedValues ? '✓ true' : '✗ false'}
                 </p>
+                <p className="text-xs font-mono text-blue-600 mt-1">
+                  Count: {hasReorderedValuesCount}
+                </p>
               </div>
 
               {/* CVR Yes Clicked Flag */}
@@ -986,6 +1014,9 @@ const SimulationMainPage: React.FC = () => {
                 <p className={`text-xs font-mono font-semibold ${cvrYesClicked ? 'text-green-700' : 'text-gray-600'}`}>
                   {cvrYesClicked ? '✓ true (Yes, I would)' : '✗ false'}
                 </p>
+                <p className="text-xs font-mono text-green-600 mt-1">
+                  Count: {cvrYesClickedCount}
+                </p>
               </div>
 
               {/* CVR No Clicked Flag */}
@@ -995,6 +1026,9 @@ const SimulationMainPage: React.FC = () => {
                 </p>
                 <p className={`text-xs font-mono font-semibold ${cvrNoClicked ? 'text-red-700' : 'text-gray-600'}`}>
                   {cvrNoClicked ? '✓ true (No, I wouldn\'t)' : '✗ false'}
+                </p>
+                <p className="text-xs font-mono text-red-600 mt-1">
+                  Count: {cvrNoClickedCount}
                 </p>
               </div>
             </div>
