@@ -806,9 +806,30 @@ const SimulationMainPage: React.FC = () => {
     console.log('Updated CheckingAlignmentList:', updatedAlignmentList);
 
     // Update FinalTopTwoValues after confirming decision
-    // BUT only if simulationMetricsReorderingFlag is FALSE
-    if (!flagsAtConfirmation.simulationMetricsReorderingFlag) {
-      // Remove the decision value if it already exists in the list, then add it to the top
+    // Logic depends on which reordering flag is active
+    if (flagsAtConfirmation.simulationMetricsReorderingFlag) {
+      // If Simulation Metrics was used, don't update FinalTopTwoValues
+      console.log('Skipping FinalTopTwoValues update because simulationMetricsReorderingFlag is true');
+      console.log('FinalTopTwoValues remains:', finalTopTwoValues);
+    } else if (flagsAtConfirmation.moralValuesReorderingFlag) {
+      // If Moral Values was used, replace FinalTopTwoValues with top 2 from MoralValuesReorderList
+      const moralValuesReorderList = localStorage.getItem('MoralValuesReorderList');
+      if (moralValuesReorderList) {
+        try {
+          const parsedList = JSON.parse(moralValuesReorderList);
+          const topTwoMoralValues = parsedList.slice(0, 2).map((item: any) => item.id || item.label || item);
+
+          setFinalTopTwoValues(topTwoMoralValues);
+          localStorage.setItem('FinalTopTwoValues', JSON.stringify(topTwoMoralValues));
+          console.log('Updated FinalTopTwoValues with top 2 from MoralValuesReorderList:', topTwoMoralValues);
+        } catch (error) {
+          console.error('Error parsing MoralValuesReorderList:', error);
+        }
+      } else {
+        console.log('MoralValuesReorderList not found in localStorage');
+      }
+    } else {
+      // Default behavior: add the decision value to the top
       const updatedTopTwoValues = [
         finalDecisionValue,
         ...finalTopTwoValues.filter(v => v !== finalDecisionValue)
@@ -817,9 +838,6 @@ const SimulationMainPage: React.FC = () => {
       setFinalTopTwoValues(updatedTopTwoValues);
       localStorage.setItem('FinalTopTwoValues', JSON.stringify(updatedTopTwoValues));
       console.log('Updated FinalTopTwoValues with final decision:', updatedTopTwoValues);
-    } else {
-      console.log('Skipping FinalTopTwoValues update because simulationMetricsReorderingFlag is true');
-      console.log('FinalTopTwoValues remains:', finalTopTwoValues);
     }
 
     // Set flag based on whether this decision came from ranked view top 2
