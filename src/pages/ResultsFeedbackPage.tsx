@@ -745,6 +745,9 @@ const ResultsFeedbackPage: React.FC = () => {
                     const confirmationEvent = scenarioEvents.find(e => e.event === 'option_confirmed');
                     const flagsAtConfirmation = confirmationEvent?.flagsAtConfirmation;
 
+                    console.log(`[Debug] Scenario ${scenarioId} - Confirmation event:`, confirmationEvent);
+                    console.log(`[Debug] Scenario ${scenarioId} - Flags at confirmation:`, flagsAtConfirmation);
+
                     const hadApaReorder = flagsAtConfirmation?.hasReorderedValues ?? false;
                     const hadCvrYes = flagsAtConfirmation?.cvrYesClicked ?? false;
                     const hadCvrNo = flagsAtConfirmation?.cvrNoClicked ?? false;
@@ -753,6 +756,15 @@ const ResultsFeedbackPage: React.FC = () => {
                     const cvrNoCount = scenarioEvents.filter(e => e.event === 'cvr_answered' && e.cvrAnswer === false).length;
                     const apaReorderCount = scenarioEvents.filter(e => e.event === 'apa_reordered').length;
                     const optionSwitches = Math.max(0, scenarioEvents.filter(e => e.event === 'option_selected').length - 1);
+
+                    console.log(`[Debug] Scenario ${scenarioId} - Counters - CVR Yes: ${cvrYesCount}, CVR No: ${cvrNoCount}, APA: ${apaReorderCount}, Switches: ${optionSwitches}`);
+
+                    if (!confirmationEvent) {
+                      console.warn(`[Warning] No confirmation event found for Scenario ${scenarioId}`);
+                    }
+                    if (confirmationEvent && !flagsAtConfirmation) {
+                      console.warn(`[Warning] No flags captured at confirmation for Scenario ${scenarioId}`);
+                    }
 
                     return (
                       <tr key={index} className="hover:bg-yellow-50">
@@ -803,26 +815,32 @@ const ResultsFeedbackPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-3 py-4 border-r border-yellow-200">
-                          <div className="space-y-1 text-xs">
-                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
-                              hadApaReorder ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              <span className="font-semibold">APA Reordered:</span>
-                              <span className="ml-2 font-bold">{hadApaReorder ? '✓ Yes' : '✗ No'}</span>
+                          {!flagsAtConfirmation ? (
+                            <div className="bg-yellow-100 border-2 border-yellow-400 rounded p-2 text-xs text-yellow-900 font-bold">
+                              ⚠️ No flag data captured at confirmation
                             </div>
-                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
-                              hadCvrYes ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              <span className="font-semibold">CVR "Yes":</span>
-                              <span className="ml-2 font-bold">{hadCvrYes ? '✓ Yes' : '✗ No'}</span>
+                          ) : (
+                            <div className="space-y-1 text-xs">
+                              <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                                hadApaReorder ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                <span className="font-semibold">APA Reordered:</span>
+                                <span className="ml-2 font-bold">{hadApaReorder ? '✓ Yes' : '✗ No'}</span>
+                              </div>
+                              <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                                hadCvrYes ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                <span className="font-semibold">CVR "Yes":</span>
+                                <span className="ml-2 font-bold">{hadCvrYes ? '✓ Yes' : '✗ No'}</span>
+                              </div>
+                              <div className={`flex items-center justify-between px-2 py-1 rounded ${
+                                hadCvrNo ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                <span className="font-semibold">CVR "No":</span>
+                                <span className="ml-2 font-bold">{hadCvrNo ? '✓ Yes' : '✗ No'}</span>
+                              </div>
                             </div>
-                            <div className={`flex items-center justify-between px-2 py-1 rounded ${
-                              hadCvrNo ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              <span className="font-semibold">CVR "No":</span>
-                              <span className="ml-2 font-bold">{hadCvrNo ? '✓ Yes' : '✗ No'}</span>
-                            </div>
-                          </div>
+                          )}
                         </td>
                         <td className="px-3 py-4">
                           <div className="space-y-1 text-xs">

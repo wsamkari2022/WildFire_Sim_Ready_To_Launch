@@ -757,6 +757,9 @@ const SimulationMainPage: React.FC = () => {
 
     const finalTopTwoValuesBeforeUpdate = [...finalTopTwoValues];
 
+    console.log(`[Scenario ${currentScenario.id}] Flags at confirmation:`, flagsAtConfirmation);
+    console.log(`[Scenario ${currentScenario.id}] FinalTopTwoValues before update:`, finalTopTwoValuesBeforeUpdate);
+
     TrackingManager.confirmOption(
       selectedDecision.id,
       selectedDecision.label,
