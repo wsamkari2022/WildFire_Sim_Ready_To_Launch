@@ -57,124 +57,11 @@ const SimulationMainPage: React.FC = () => {
   const [isFromRankedView, setIsFromRankedView] = useState(false);
   const [showAlternativeNotification, setShowAlternativeNotification] = useState(false);
   const [finalTopTwoValues, setFinalTopTwoValues] = useState<string[]>([]);
-  const [debugFinalValues, setDebugFinalValues] = useState<string[]>([]);
-  const [debugMoralValuesReorder, setDebugMoralValuesReorder] = useState<string[]>([]);
-  const [hasReorderedValues, setHasReorderedValues] = useState<boolean>(false);
-  const [cvrYesClicked, setCvrYesClicked] = useState<boolean>(false);
-  const [cvrNoClicked, setCvrNoClicked] = useState<boolean>(false);
-  const [simulationMetricsReorderingFlag, setSimulationMetricsReorderingFlag] = useState<boolean>(false);
-  const [moralValuesReorderingFlag, setMoralValuesReorderingFlag] = useState<boolean>(false);
-  const [hasReorderedValuesCount, setHasReorderedValuesCount] = useState<number>(0);
-  const [cvrYesClickedCount, setCvrYesClickedCount] = useState<number>(0);
-  const [cvrNoClickedCount, setCvrNoClickedCount] = useState<number>(0);
-  const [simulationMetricsSelectedCount, setSimulationMetricsSelectedCount] = useState<number>(0);
-  const [moralValuesSelectedCount, setMoralValuesSelectedCount] = useState<number>(0);
   const [alternativesExploredCount, setAlternativesExploredCount] = useState<number>(0);
   const [scenariosFinalDecisionLabels, setScenariosFinalDecisionLabels] = useState<string[]>([]);
   const [checkingAlignmentList, setCheckingAlignmentList] = useState<string[]>([]);
 
   const currentScenario = scenarios[currentScenarioIndex];
-
-  // Monitor and update debug values for all lists
-  useEffect(() => {
-    const updateDebugValues = () => {
-      // Update debugFinalValues
-      const savedFinalValues = localStorage.getItem('finalValues');
-      if (savedFinalValues) {
-        try {
-          const parsed = JSON.parse(savedFinalValues);
-          const values = parsed.map((v: any) => v.name.toLowerCase());
-          setDebugFinalValues(values);
-        } catch (error) {
-          setDebugFinalValues([]);
-        }
-      }
-
-      // Update debugMoralValuesReorder
-      const savedMoralValuesReorder = localStorage.getItem('MoralValuesReorderList');
-      if (savedMoralValuesReorder) {
-        try {
-          const parsed = JSON.parse(savedMoralValuesReorder);
-          const values = parsed.map((v: any) => v.id.toLowerCase());
-          setDebugMoralValuesReorder(values);
-        } catch (error) {
-          setDebugMoralValuesReorder([]);
-        }
-      } else {
-        setDebugMoralValuesReorder([]);
-      }
-
-      // Update FinalTopTwoValues from localStorage
-      const savedFinalTopTwo = localStorage.getItem('FinalTopTwoValues');
-      if (savedFinalTopTwo) {
-        try {
-          const parsed = JSON.parse(savedFinalTopTwo);
-          setFinalTopTwoValues(parsed);
-        } catch (error) {
-          // Keep current state
-        }
-      }
-
-      // Update hasReorderedValues flag
-      const reorderedFlag = localStorage.getItem('hasReorderedValues');
-      setHasReorderedValues(reorderedFlag === 'true');
-
-      // Update new reordering flags
-      const simulationMetricsFlag = localStorage.getItem('simulationMetricsReorderingFlag');
-      setSimulationMetricsReorderingFlag(simulationMetricsFlag === 'true');
-
-      const moralValuesFlag = localStorage.getItem('moralValuesReorderingFlag');
-      setMoralValuesReorderingFlag(moralValuesFlag === 'true');
-
-      // Update counters from localStorage
-      const reorderedCount = localStorage.getItem('hasReorderedValuesCount');
-      setHasReorderedValuesCount(reorderedCount ? parseInt(reorderedCount) : 0);
-
-      const yesCount = localStorage.getItem('cvrYesClickedCount');
-      setCvrYesClickedCount(yesCount ? parseInt(yesCount) : 0);
-
-      const noCount = localStorage.getItem('cvrNoClickedCount');
-      setCvrNoClickedCount(noCount ? parseInt(noCount) : 0);
-
-      const metricsCount = localStorage.getItem('simulationMetricsSelectedCount');
-      setSimulationMetricsSelectedCount(metricsCount ? parseInt(metricsCount) : 0);
-
-      const valuesCount = localStorage.getItem('moralValuesSelectedCount');
-      setMoralValuesSelectedCount(valuesCount ? parseInt(valuesCount) : 0);
-
-      const alternativesCount = localStorage.getItem('alternativesExploredCount');
-      setAlternativesExploredCount(alternativesCount ? parseInt(alternativesCount) : 0);
-
-      // Update ScenariosFinalDecisionLabels from localStorage
-      const savedDecisionLabels = localStorage.getItem('ScenariosFinalDecisionLabels');
-      if (savedDecisionLabels) {
-        try {
-          const parsed = JSON.parse(savedDecisionLabels);
-          setScenariosFinalDecisionLabels(parsed);
-        } catch (error) {
-          setScenariosFinalDecisionLabels([]);
-        }
-      }
-
-      // Update CheckingAlignmentList from localStorage
-      const savedAlignmentList = localStorage.getItem('CheckingAlignmentList');
-      if (savedAlignmentList) {
-        try {
-          const parsed = JSON.parse(savedAlignmentList);
-          setCheckingAlignmentList(parsed);
-        } catch (error) {
-          setCheckingAlignmentList([]);
-        }
-      }
-    };
-
-    updateDebugValues();
-
-    // Set up an interval to check for updates during the scenario
-    const interval = setInterval(updateDebugValues, 500);
-
-    return () => clearInterval(interval);
-  }, [currentScenarioIndex, selectedDecision]);
 
   // Reset hasExploredAlternatives when scenario changes
   useEffect(() => {
@@ -183,17 +70,12 @@ const SimulationMainPage: React.FC = () => {
 
     // Reset hasReorderedValues flag for new scenario
     localStorage.setItem('hasReorderedValues', 'false');
-    setHasReorderedValues(false);
 
     // Reset new reordering flags for new scenario
-    setSimulationMetricsReorderingFlag(false);
-    setMoralValuesReorderingFlag(false);
     localStorage.setItem('simulationMetricsReorderingFlag', 'false');
     localStorage.setItem('moralValuesReorderingFlag', 'false');
 
     // Reset CVR flags for new scenario
-    setCvrYesClicked(false);
-    setCvrNoClicked(false);
     localStorage.setItem('cvrYesClicked', 'false');
     localStorage.setItem('cvrNoClicked', 'false');
 
@@ -617,8 +499,6 @@ const SimulationMainPage: React.FC = () => {
 
     // Set CVR flags based on answer and persist to localStorage
     if (answer) {
-      setCvrYesClicked(true);
-      setCvrNoClicked(false);
       localStorage.setItem('cvrYesClicked', 'true');
       localStorage.setItem('cvrNoClicked', 'false');
 
@@ -626,10 +506,7 @@ const SimulationMainPage: React.FC = () => {
       const currentCount = localStorage.getItem('cvrYesClickedCount');
       const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
       localStorage.setItem('cvrYesClickedCount', newCount.toString());
-      setCvrYesClickedCount(newCount);
     } else {
-      setCvrYesClicked(false);
-      setCvrNoClicked(true);
       localStorage.setItem('cvrYesClicked', 'false');
       localStorage.setItem('cvrNoClicked', 'true');
 
@@ -637,7 +514,6 @@ const SimulationMainPage: React.FC = () => {
       const currentCount = localStorage.getItem('cvrNoClickedCount');
       const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
       localStorage.setItem('cvrNoClickedCount', newCount.toString());
-      setCvrNoClickedCount(newCount);
     }
 
     // Track CVR answer
@@ -748,14 +624,6 @@ const SimulationMainPage: React.FC = () => {
 
     setShowAlternativesModal(true);
   };
-
-  const handleResetCVRFlags = () => {
-    setCvrYesClicked(false);
-    setCvrNoClicked(false);
-    localStorage.setItem('cvrYesClicked', 'false');
-    localStorage.setItem('cvrNoClicked', 'false');
-  };
-
 
   const handleConfirmDecision = () => {
     if (!hasExploredAlternatives) {
@@ -1082,133 +950,6 @@ const SimulationMainPage: React.FC = () => {
           <h3 className="text-base font-medium mb-1 text-gray-800">{currentScenario.title}</h3>
           <p className="text-sm text-gray-600 mb-3">{currentScenario.description}</p>
 
-          {/* Enhanced Debug Panel */}
-          <div className="mb-3 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-            <p className="text-sm font-bold text-yellow-900 mb-3">🐛 Debug Panel - Value Lists</p>
-
-            <div className="space-y-2">
-              {/* finalValues */}
-              <div className="bg-white p-2 rounded border border-yellow-200">
-                <p className="text-xs font-semibold text-gray-700 mb-1">finalValues:</p>
-                <p className="text-xs text-gray-600 font-mono">
-                  {debugFinalValues.length > 0
-                    ? `[${debugFinalValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                    : '[ Empty ]'}
-                </p>
-              </div>
-
-              {/* MoralValuesReorderList */}
-              <div className="bg-white p-2 rounded border border-yellow-200">
-                <p className="text-xs font-semibold text-gray-700 mb-1">MoralValuesReorderList:</p>
-                <p className="text-xs text-gray-600 font-mono">
-                  {debugMoralValuesReorder.length > 0
-                    ? `[${debugMoralValuesReorder.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                    : '[ Empty - Not reordered yet ]'}
-                </p>
-              </div>
-
-              {/* FinalTopTwoValues */}
-              <div className="bg-green-50 p-2 rounded border-2 border-green-400">
-                <p className="text-xs font-bold text-green-800 mb-1">FinalTopTwoValues (Active):</p>
-                <p className="text-xs text-green-700 font-mono font-semibold">
-                  {finalTopTwoValues.length > 0
-                    ? `[${finalTopTwoValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                    : '[ Empty - Not initialized yet ]'}
-                </p>
-              </div>
-
-              {/* hasReorderedValues Flag */}
-              <div className={`p-2 rounded border-2 ${hasReorderedValues ? 'bg-blue-50 border-blue-400' : 'bg-gray-50 border-gray-300'}`}>
-                <p className={`text-xs font-bold mb-1 ${hasReorderedValues ? 'text-blue-800' : 'text-gray-600'}`}>
-                  hasReorderedValues:
-                </p>
-                <p className={`text-xs font-mono font-semibold ${hasReorderedValues ? 'text-blue-700' : 'text-gray-600'}`}>
-                  {hasReorderedValues ? '✓ true' : '✗ false'}
-                </p>
-                <p className="text-xs font-mono text-blue-600 mt-1">
-                  Count: {hasReorderedValuesCount}
-                </p>
-              </div>
-
-              {/* CVR Yes Clicked Flag */}
-              <div className={`p-2 rounded border-2 ${cvrYesClicked ? 'bg-green-50 border-green-400' : 'bg-gray-50 border-gray-300'}`}>
-                <p className={`text-xs font-bold mb-1 ${cvrYesClicked ? 'text-green-800' : 'text-gray-600'}`}>
-                  cvrYesClicked:
-                </p>
-                <p className={`text-xs font-mono font-semibold ${cvrYesClicked ? 'text-green-700' : 'text-gray-600'}`}>
-                  {cvrYesClicked ? '✓ true (Yes, I would)' : '✗ false'}
-                </p>
-                <p className="text-xs font-mono text-green-600 mt-1">
-                  Count: {cvrYesClickedCount}
-                </p>
-              </div>
-
-              {/* CVR No Clicked Flag */}
-              <div className={`p-2 rounded border-2 ${cvrNoClicked ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-300'}`}>
-                <p className={`text-xs font-bold mb-1 ${cvrNoClicked ? 'text-red-800' : 'text-gray-600'}`}>
-                  cvrNoClicked:
-                </p>
-                <p className={`text-xs font-mono font-semibold ${cvrNoClicked ? 'text-red-700' : 'text-gray-600'}`}>
-                  {cvrNoClicked ? '✓ true (No, I wouldn\'t)' : '✗ false'}
-                </p>
-                <p className="text-xs font-mono text-red-600 mt-1">
-                  Count: {cvrNoClickedCount}
-                </p>
-              </div>
-
-              {/* Simulation Metrics Selected Counter */}
-              <div className="p-2 rounded border-2 bg-indigo-50 border-indigo-400">
-                <p className="text-xs font-bold mb-1 text-indigo-800">
-                  Simulation Metrics Selected:
-                </p>
-                <p className="text-xs font-mono font-semibold text-indigo-700">
-                  Count: {simulationMetricsSelectedCount}
-                </p>
-              </div>
-
-              {/* Moral Values Selected Counter */}
-              <div className="p-2 rounded border-2 bg-purple-50 border-purple-400">
-                <p className="text-xs font-bold mb-1 text-purple-800">
-                  Moral Values Selected:
-                </p>
-                <p className="text-xs font-mono font-semibold text-purple-700">
-                  Count: {moralValuesSelectedCount}
-                </p>
-              </div>
-
-              {/* ScenariosFinalDecisionLabels */}
-              <div className="bg-cyan-50 p-2 rounded border-2 border-cyan-400">
-                <p className="text-xs font-bold text-cyan-800 mb-1">ScenariosFinalDecisionLabels (NEW):</p>
-                <p className="text-xs text-cyan-700 font-mono font-semibold">
-                  {scenariosFinalDecisionLabels.length > 0
-                    ? `[${scenariosFinalDecisionLabels.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                    : '[ Empty - No decisions confirmed yet ]'}
-                </p>
-                <p className="text-xs text-cyan-600 mt-1">
-                  Count: {scenariosFinalDecisionLabels.length} / 3 scenarios
-                </p>
-              </div>
-
-              {/* CheckingAlignmentList */}
-              <div className="bg-orange-50 p-2 rounded border-2 border-orange-400">
-                <p className="text-xs font-bold text-orange-800 mb-1">CheckingAlignmentList (NEW):</p>
-                <p className="text-xs text-orange-700 font-mono font-semibold">
-                  {checkingAlignmentList.length > 0
-                    ? `[${checkingAlignmentList.join(', ')}]`
-                    : '[ Empty - No decisions confirmed yet ]'}
-                </p>
-                <p className="text-xs text-orange-600 mt-1">
-                  Aligned: {checkingAlignmentList.filter(s => s === 'Aligned').length} |
-                  Misaligned: {checkingAlignmentList.filter(s => s === 'Misaligned').length}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-yellow-600 mt-3 italic">
-              ⚡ Updates automatically during scenario
-            </p>
-          </div>
-
           {!selectedDecision ? (
             <>
               <div className="flex justify-between items-center mb-2">
@@ -1325,7 +1066,6 @@ const SimulationMainPage: React.FC = () => {
         onConfirmDecision={handleConfirmDecision}
         canConfirm={hasExploredAlternatives}
         onReviewAlternatives={handleExploreAlternatives}
-        onResetCVRFlags={handleResetCVRFlags}
       />
 
       <RadarChart
