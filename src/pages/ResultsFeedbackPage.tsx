@@ -631,7 +631,6 @@ const ResultsFeedbackPage: React.FC = () => {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scenario</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Final Choice</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aligned?</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Switches</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Time (s)</th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">CVR Visits</th>
@@ -647,13 +646,6 @@ const ResultsFeedbackPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">
                       {scenario.finalChoice}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center">
-                      {scenario.aligned ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 mx-auto" />
-                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-center font-medium text-gray-900">
                       {scenario.switches}
