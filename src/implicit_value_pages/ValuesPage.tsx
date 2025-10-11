@@ -160,9 +160,12 @@ const ValuesPage: React.FC = () => {
                 implicit: deepValues.map(v => v.name)
             };
             localStorage.setItem('userValues', JSON.stringify(userValues));
-            localStorage.setItem('finalValues', JSON.stringify(matchedStableValues));
 
-            const baselineValues = matchedStableValues.map((value, index) => ({
+            // Only pass the first two top values to the simulation
+            const topTwoValues = matchedStableValues.slice(0, 2);
+            localStorage.setItem('finalValues', JSON.stringify(topTwoValues));
+
+            const baselineValues = topTwoValues.map((value, index) => ({
                 session_id: sessionId,
                 value_name: value.name,
                 match_percentage: value.matchPercentage,
@@ -175,7 +178,7 @@ const ValuesPage: React.FC = () => {
             await DatabaseService.insertValueEvolution({
                 session_id: sessionId,
                 scenario_id: 0,
-                value_list_snapshot: matchedStableValues,
+                value_list_snapshot: topTwoValues,
                 change_trigger: 'baseline_established',
                 change_type: 'initial'
             });
