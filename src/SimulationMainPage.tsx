@@ -528,62 +528,8 @@ const SimulationMainPage: React.FC = () => {
     }
 
     if (answer) {
-      // User confirmed their choice, update moral values reorder list to prioritize this value
-      if (selectedDecision) {
-        const selectedValue = selectedDecision.label.toLowerCase();
-        
-        // Get current matched stable values and moral values reorder list
-        const savedMatchedValues = localStorage.getItem('finalValues');
-        const existingMoralValuesReorder = localStorage.getItem('MoralValuesReorderList');
-        let allAvailableValues: Array<{id: string, label: string}> = [];
-        
-        // First, try to get from existing reorder list
-        if (existingMoralValuesReorder) {
-          try {
-            allAvailableValues = JSON.parse(existingMoralValuesReorder);
-          } catch (error) {
-            console.error('Error parsing existing MoralValuesReorderList:', error);
-          }
-        }
-        
-        // If no existing reorder list, get from matched stable values
-        if (savedMatchedValues) {
-          try {
-            const parsedValues = JSON.parse(savedMatchedValues);
-            const matchedStableValuesList = parsedValues.map((v: any) => ({
-              id: v.name.toLowerCase(),
-              label: v.name
-            }));
-            
-            // If we don't have a reorder list yet, use matched stable values
-            if (allAvailableValues.length === 0) {
-              allAvailableValues = matchedStableValuesList;
-            }
-          } catch (error) {
-            console.error('Error parsing matched stable values:', error);
-          }
-        }
-        
-        // Remove the selected value from its current position and add it to the top
-        const filteredValues = allAvailableValues.filter(v => v.id !== selectedValue);
-        const newMoralValuesReorderList = [
-          { id: selectedValue, label: selectedDecision.label },
-          ...filteredValues
-        ];
-        
-        // Save to localStorage
-        localStorage.setItem('MoralValuesReorderList', JSON.stringify(newMoralValuesReorderList));
-        
-        // Update the matched stable values to reflect the new priority
-        setMatchedStableValues(prev => {
-          const updated = [selectedValue, ...prev.filter(v => v !== selectedValue)];
-          return updated;
-        });
-        
-        console.log('Updated MoralValuesReorderList:', newMoralValuesReorderList);
-      }
-      
-      // Show decision summary
+      // User confirmed their choice - show decision summary
+      // Note: MoralValuesReorderList will be updated when decision is actually confirmed
       setShowDecisionSummary(true);
     } else {
       // User rejected their choice, show adaptive preference view
@@ -660,6 +606,56 @@ const SimulationMainPage: React.FC = () => {
 
     console.log(`[Scenario ${currentScenario.id}] Flags at confirmation:`, flagsAtConfirmation);
     console.log(`[Scenario ${currentScenario.id}] FinalTopTwoValues before update:`, finalTopTwoValuesBeforeUpdate);
+
+    // If user answered "Yes" to CVR question, update MoralValuesReorderList now
+    if (flagsAtConfirmation.cvrYesClicked && !isAligned) {
+      const selectedValue = selectedDecision.label.toLowerCase();
+
+      // Get current matched stable values and moral values reorder list
+      const savedMatchedValues = localStorage.getItem('finalValues');
+      const existingMoralValuesReorder = localStorage.getItem('MoralValuesReorderList');
+      let allAvailableValues: Array<{id: string, label: string}> = [];
+
+      // First, try to get from existing reorder list
+      if (existingMoralValuesReorder) {
+        try {
+          allAvailableValues = JSON.parse(existingMoralValuesReorder);
+        } catch (error) {
+          console.error('Error parsing existing MoralValuesReorderList:', error);
+        }
+      }
+
+      // If no existing reorder list, get from matched stable values
+      if (savedMatchedValues && allAvailableValues.length === 0) {
+        try {
+          const parsedValues = JSON.parse(savedMatchedValues);
+          allAvailableValues = parsedValues.map((v: any) => ({
+            id: v.name.toLowerCase(),
+            label: v.name
+          }));
+        } catch (error) {
+          console.error('Error parsing matched stable values:', error);
+        }
+      }
+
+      // Remove the selected value from its current position and add it to the top
+      const filteredValues = allAvailableValues.filter(v => v.id !== selectedValue);
+      const newMoralValuesReorderList = [
+        { id: selectedValue, label: selectedDecision.label },
+        ...filteredValues
+      ];
+
+      // Save to localStorage
+      localStorage.setItem('MoralValuesReorderList', JSON.stringify(newMoralValuesReorderList));
+
+      // Update the matched stable values to reflect the new priority
+      setMatchedStableValues(prev => {
+        const updated = [selectedValue, ...prev.filter(v => v !== selectedValue)];
+        return updated;
+      });
+
+      console.log('Updated MoralValuesReorderList at confirmation:', newMoralValuesReorderList);
+    }
 
     TrackingManager.confirmOption(
       selectedDecision.id,
