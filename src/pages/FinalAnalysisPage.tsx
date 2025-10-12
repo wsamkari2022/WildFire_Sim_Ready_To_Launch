@@ -506,13 +506,26 @@ const FinalAnalysisPage: React.FC = () => {
                 <div className="bg-gray-50 p-3 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Biodiversity Condition</p>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
+                    <div
                       className="bg-green-600 h-2.5 rounded-full"
                       style={{ width: `${finalMetrics.biodiversityCondition}%` }}
                     ></div>
                   </div>
                   <p className="text-right text-sm text-gray-600 mt-1">
                     {finalMetrics.biodiversityCondition}%
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-1">Properties Condition</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-purple-600 h-2.5 rounded-full"
+                      style={{ width: `${finalMetrics.propertiesCondition}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-right text-sm text-gray-600 mt-1">
+                    {finalMetrics.propertiesCondition}%
                   </p>
                 </div>
 
