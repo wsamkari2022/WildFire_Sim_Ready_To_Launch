@@ -60,6 +60,7 @@ const SimulationMainPage: React.FC = () => {
   const [alternativesExploredCount, setAlternativesExploredCount] = useState<number>(0);
   const [scenariosFinalDecisionLabels, setScenariosFinalDecisionLabels] = useState<string[]>([]);
   const [checkingAlignmentList, setCheckingAlignmentList] = useState<string[]>([]);
+  const [previousScenarioUsedSimulationMetrics, setPreviousScenarioUsedSimulationMetrics] = useState(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
 
@@ -67,6 +68,10 @@ const SimulationMainPage: React.FC = () => {
   useEffect(() => {
     setHasExploredAlternatives(false);
     setIsFromRankedView(false);
+
+    // Check if previous scenario used simulation metrics reordering
+    const prevUsedSimMetrics = localStorage.getItem('previousScenarioUsedSimulationMetrics') === 'true';
+    setPreviousScenarioUsedSimulationMetrics(prevUsedSimMetrics);
 
     // Reset hasReorderedValues flag for new scenario
     localStorage.setItem('hasReorderedValues', 'false');
@@ -138,9 +143,25 @@ const SimulationMainPage: React.FC = () => {
 
     // Load matched stable values from localStorage
     const moralValuesReorder = localStorage.getItem('MoralValuesReorderList');
-    
-    // If user has reordered moral values, use those instead of original matched values
-    if (moralValuesReorder && currentScenarioIndex > 0) {
+
+    // Check if previous scenario used simulation metrics reordering
+    const prevUsedSimMetrics = localStorage.getItem('previousScenarioUsedSimulationMetrics') === 'true';
+
+    // If previous scenario used simulation metrics, use FinalTopTwoValues as matched values
+    if (prevUsedSimMetrics && currentScenarioIndex > 0) {
+      const finalTopTwo = localStorage.getItem('FinalTopTwoValues');
+      if (finalTopTwo) {
+        try {
+          const topTwoValues = JSON.parse(finalTopTwo);
+          setMatchedStableValues(topTwoValues);
+          console.log('Using FinalTopTwoValues as matched stable values:', topTwoValues);
+        } catch (error) {
+          console.error('Error parsing FinalTopTwoValues:', error);
+          setMatchedStableValues([]);
+        }
+      }
+    } else if (moralValuesReorder && currentScenarioIndex > 0) {
+      // If user has reordered moral values, use those instead of original matched values
       try {
         const reorderedValues = JSON.parse(moralValuesReorder);
         const topValues = reorderedValues.slice(0, 2).map((v: any) => v.id.toLowerCase());
@@ -223,11 +244,50 @@ const SimulationMainPage: React.FC = () => {
   }, [currentScenarioIndex]);
   const calculatePreferenceBasedOptions = useCallback((): DecisionOptionType[] => {
     if (!currentScenario) return [];
-    
-    // FIRST PRIORITY: Check for reordered moral values (including CVR updates)
+
+    // HIGHEST PRIORITY: Check if previous scenario used simulation metrics reordering
+    // If true, use FinalTopTwoValues for initial options
+    const prevUsedSimMetrics = localStorage.getItem('previousScenarioUsedSimulationMetrics') === 'true';
+    if (prevUsedSimMetrics && currentScenarioIndex > 0) {
+      const finalTopTwo = localStorage.getItem('FinalTopTwoValues');
+      if (finalTopTwo) {
+        try {
+          const topTwoValues = JSON.parse(finalTopTwo);
+          console.log('Previous scenario used simulation metrics. Using FinalTopTwoValues for initial options:', topTwoValues);
+
+          // Find options that match FinalTopTwoValues
+          const matchingOptions = currentScenario.options.filter(option =>
+            topTwoValues.includes(option.label.toLowerCase())
+          );
+
+          // Sort matching options to maintain the order from FinalTopTwoValues
+          const sortedMatchingOptions = matchingOptions.sort((a, b) => {
+            const aIndex = topTwoValues.indexOf(a.label.toLowerCase());
+            const bIndex = topTwoValues.indexOf(b.label.toLowerCase());
+            return aIndex - bIndex;
+          });
+
+          if (sortedMatchingOptions.length >= 2) {
+            console.log('Found 2+ matching options from FinalTopTwoValues:', sortedMatchingOptions.map(o => o.label));
+            return sortedMatchingOptions.slice(0, 2);
+          } else if (sortedMatchingOptions.length === 1) {
+            // If only one matching option, add the best remaining option
+            const remainingOptions = currentScenario.options.filter(option =>
+              !topTwoValues.includes(option.label.toLowerCase())
+            );
+            console.log('Found 1 matching option from FinalTopTwoValues, adding best remaining:', [sortedMatchingOptions[0].label, remainingOptions[0]?.label]);
+            return [sortedMatchingOptions[0], remainingOptions[0]];
+          }
+        } catch (error) {
+          console.error('Error parsing FinalTopTwoValues:', error);
+        }
+      }
+    }
+
+    // SECOND PRIORITY: Check for reordered moral values (including CVR updates)
     const moralValuesReorder = localStorage.getItem('MoralValuesReorderList');
     const simulationMetricsReorder = localStorage.getItem('SimulationMetricsReorderList');
-    
+
     if (moralValuesReorder) {
       try {
         const reorderedValues = JSON.parse(moralValuesReorder);
@@ -691,6 +751,9 @@ const SimulationMainPage: React.FC = () => {
       // If Simulation Metrics was used, don't update FinalTopTwoValues
       console.log('Skipping FinalTopTwoValues update because simulationMetricsReorderingFlag is true');
       console.log('FinalTopTwoValues remains:', finalTopTwoValues);
+
+      // Set flag for next scenario to use FinalTopTwoValues for initial options
+      localStorage.setItem('previousScenarioUsedSimulationMetrics', 'true');
     } else if (flagsAtConfirmation.moralValuesReorderingFlag) {
       // If Moral Values was used, replace FinalTopTwoValues with top 2 from MoralValuesReorderList
       const moralValuesReorderList = localStorage.getItem('MoralValuesReorderList');
@@ -718,6 +781,9 @@ const SimulationMainPage: React.FC = () => {
       setFinalTopTwoValues(updatedTopTwoValues);
       localStorage.setItem('FinalTopTwoValues', JSON.stringify(updatedTopTwoValues));
       console.log('Updated FinalTopTwoValues with final decision:', updatedTopTwoValues);
+
+      // Clear the flag since we're not using simulation metrics
+      localStorage.setItem('previousScenarioUsedSimulationMetrics', 'false');
     }
 
     // Set flag based on whether this decision came from ranked view top 2
