@@ -810,15 +810,6 @@ const ResultsFeedbackPage: React.FC = () => {
                         </td>
                         <td className="px-3 py-4 text-xs border-r border-yellow-200">
                           <div className="space-y-2">
-                            <div className="bg-blue-50 p-2 rounded border border-blue-200">
-                              <p className="font-bold text-blue-900 mb-1">{valueListName}:</p>
-                              <p className="text-blue-700 font-mono break-words">
-                                {valueListUsed.length > 0
-                                  ? `[${valueListUsed.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
-                                  : '[ Empty ]'
-                                }
-                              </p>
-                            </div>
                             {scenarioSpecificList && (
                               <div className="bg-purple-50 p-2 rounded border-2 border-purple-400">
                                 <p className="font-bold text-purple-900 mb-1">{scenarioSpecificListName}:</p>
