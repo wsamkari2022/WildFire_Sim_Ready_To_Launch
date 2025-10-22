@@ -810,11 +810,14 @@ const ResultsFeedbackPage: React.FC = () => {
                         </td>
                         <td className="px-3 py-4 text-xs border-r border-yellow-200">
                           <div className="space-y-2">
-                            {scenarioSpecificList && scenarioSpecificList.length > 0 && (
+                            {scenarioSpecificList && (
                               <div className="bg-purple-50 p-2 rounded border-2 border-purple-400">
                                 <p className="font-bold text-purple-900 mb-1">{scenarioSpecificListName}:</p>
                                 <p className="text-purple-700 font-mono break-words">
-                                  {`[${scenarioSpecificList.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`}
+                                  {scenarioSpecificList.length > 0
+                                    ? `[${scenarioSpecificList.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')}]`
+                                    : '[ Empty ]'
+                                  }
                                 </p>
                               </div>
                             )}
