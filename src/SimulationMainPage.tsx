@@ -1055,10 +1055,10 @@ const SimulationMainPage: React.FC = () => {
         
         <MetricsDisplay metrics={metrics} animatingMetrics={animatingMetrics} />
 
-        <div className="bg-gradient-to-br from-teal-50 via-teal-100 to-cyan-50 border-2 border-teal-300 rounded-lg shadow-lg p-5 mb-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-2 text-teal-700">Current Scenario</h2>
-          <h3 className="text-xl font-bold mb-2 text-teal-900" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.title}</h3>
-          <p className="text-base text-teal-800 leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.description}</p>
+        <div className="bg-gradient-to-br from-teal-50 via-teal-100 to-cyan-50 border-2 border-teal-300 rounded-lg shadow-lg p-3 mb-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-1 text-teal-700">Current Scenario</h2>
+          <h3 className="text-lg font-bold mb-1 text-teal-900" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.title}</h3>
+          <p className="text-sm text-teal-800 leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.description}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4 flex-1 flex flex-col overflow-hidden">
@@ -1067,54 +1067,6 @@ const SimulationMainPage: React.FC = () => {
             <>
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-base font-medium text-gray-800">Select Your Decision</h3>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <button 
-                      onClick={handleExploreAlternatives}
-                      className={`flex items-center text-center text-sm px-3 py-1.5 rounded-md transition-all duration-300 relative ${
-                        availableAlternatives.length === 0
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : hasExploredAlternatives
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                          : 'bg-purple-300 text-purple-800 hover:bg-purple-400 animate-pulse shadow-lg shadow-purple-400/50 border-2 border-purple-200'
-                      }`}
-                      disabled={availableAlternatives.length === 0}
-                    >
-                      {hasExploredAlternatives ? (
-                        <Eye size={16} className="mr-1.5" />
-                      ) : (
-                        <Lightbulb size={16} className="mr-1.5" />
-                      )}
-                      {hasExploredAlternatives
-                        ? `Alternatives Reviewed ${addedAlternatives.length > 0 ? `(${addedAlternatives.length} added)` : ''}`
-                        : 'Explore Alternatives'
-                      }
-                      {!hasExploredAlternatives && availableAlternatives.length > 0 && (
-                        <>
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
-                        </>
-                      )}
-                    </button>
-                    
-                    {/* Elegant bubble tooltip */}
-                    {!hasExploredAlternatives && availableAlternatives.length > 0 && (
-                      <div className="absolute top-1/2 -left-32 transform -translate-y-1/2 z-10">
-                        <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-md shadow-lg whitespace-nowrap animate-bounce">
-                          Exploring is Required
-                          <div className="absolute top-1/2 left-full transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-purple-500"></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => setShowRadarChart(true)}
-                    className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md transition-colors duration-200"
-                  >
-                    <BarChart2 size={16} className="mr-1.5" />
-                    View Trade-Off Comparison
-                  </button>
-                </div>
               </div>
               
               <div className="relative">
@@ -1139,7 +1091,7 @@ const SimulationMainPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="flex flex-col gap-4 flex-1">
+                <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                   {[...getInitialOptions(), ...addedAlternatives].map((option) => (
                     <DecisionOption
                       key={option.id}
@@ -1149,6 +1101,54 @@ const SimulationMainPage: React.FC = () => {
                       scenarioIndex={currentScenarioIndex}
                     />
                   ))}
+                </div>
+
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 pt-3 mt-4 flex gap-3 justify-end">
+                  <div className="relative">
+                    <button
+                      onClick={handleExploreAlternatives}
+                      className={`flex items-center text-center text-sm px-4 py-2 rounded-md transition-all duration-300 relative ${
+                        availableAlternatives.length === 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : hasExploredAlternatives
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-purple-300 text-purple-800 hover:bg-purple-400 animate-pulse shadow-lg shadow-purple-400/50 border-2 border-purple-200'
+                      }`}
+                      disabled={availableAlternatives.length === 0}
+                    >
+                      {hasExploredAlternatives ? (
+                        <Eye size={16} className="mr-1.5" />
+                      ) : (
+                        <Lightbulb size={16} className="mr-1.5" />
+                      )}
+                      {hasExploredAlternatives
+                        ? `Alternatives Reviewed ${addedAlternatives.length > 0 ? `(${addedAlternatives.length} added)` : ''}`
+                        : 'Explore Alternatives'
+                      }
+                      {!hasExploredAlternatives && availableAlternatives.length > 0 && (
+                        <>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
+                        </>
+                      )}
+                    </button>
+
+                    {!hasExploredAlternatives && availableAlternatives.length > 0 && (
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+                        <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-md shadow-lg whitespace-nowrap animate-bounce">
+                          Exploring is Required
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-500"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setShowRadarChart(true)}
+                    className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-md transition-colors duration-200"
+                  >
+                    <BarChart2 size={16} className="mr-1.5" />
+                    View Trade-Off Comparison
+                  </button>
                 </div>
               </div>
             </>

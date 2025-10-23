@@ -96,36 +96,34 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
         className={`bg-white border ${
           !isFeasible
             ? 'border-red-300 bg-red-50/50 opacity-75'
-            : option.isAlternative
-              ? 'border-blue-300 shadow-[0_0_0_1px_rgba(59,130,246,0.1)] bg-gradient-to-b from-blue-50/50 to-transparent'
-              : 'border-gray-300'
-        } text-left p-4 rounded-lg transition-all duration-200 flex flex-col w-full`}
+            : 'border-gray-300'
+        } text-left p-3 rounded-lg transition-all duration-200 flex flex-col w-full`}
       >
       {!isFeasible && (
         <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
           <AlertTriangle size={16} className="text-red-600" />
         </div>
       )}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1">
-          <h4 className={`text-lg font-semibold ${!isFeasible ? 'text-red-800' : option.isAlternative ? 'text-blue-900' : 'text-gray-900'} mb-2 ${!isFeasible ? 'ml-6' : ''}`}>
+          <h4 className={`text-base font-semibold ${!isFeasible ? 'text-red-800' : 'text-gray-900'} mb-1 ${!isFeasible ? 'ml-6' : ''}`}>
             {option.title}
           </h4>
           <p className="text-gray-700 text-sm leading-relaxed">{option.description}</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
           {option.isAlternative && (
-            <span className="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full whitespace-nowrap font-medium">
+            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
               Alternative
             </span>
           )}
           {valueDisplay && (
-            <span className="text-xs bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full whitespace-nowrap flex items-center font-medium">
+            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full whitespace-nowrap flex items-center font-medium">
               {valueDisplay.icon}
               {valueDisplay.name}
             </span>
           )}
-          <div className="flex items-center gap-1 bg-gray-100 px-2.5 py-1 rounded-full">
+          <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-full">
             <ThumbsUp size={12} className="text-green-600" />
             <span className="text-xs text-gray-700 whitespace-nowrap font-medium">
               {getRecommendationCount()}/5 recommend
@@ -134,19 +132,19 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-3">
-        <h5 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Key Considerations</h5>
+      <div className="bg-gray-50 border border-gray-200 rounded-md p-2 mb-2">
+        <h5 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Key Considerations</h5>
         {option.riskInfo.map((risk, index) => (
-          <div key={index} className="flex items-start mb-1.5 last:mb-0">
+          <div key={index} className="flex items-start mb-1 last:mb-0">
             <span className="text-red-500 mr-2 mt-0.5 font-bold">•</span>
             <p className="text-xs text-gray-700 leading-relaxed">{risk}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
-        <h5 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Metrics Impact</h5>
-        <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-2">
+        <h5 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">Metrics Impact</h5>
+        <div className="grid grid-cols-2 gap-1.5 text-xs">
           <div className="flex items-center text-green-600 font-medium">
             <Users size={14} className="mr-1.5" />
             <span className="text-xs">Lives Saved: {formatImpactValue(option.impact.livesSaved, true)}</span>
@@ -181,12 +179,10 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
       <button
         onClick={() => !isFeasible ? null : onSelect(option)}
         disabled={!isFeasible}
-        className={`w-full py-2.5 px-4 rounded-md font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+        className={`w-full py-2 px-4 rounded-md font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
           !isFeasible
             ? 'bg-red-100 text-red-700 cursor-not-allowed border border-red-300'
-            : option.isAlternative
-              ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-md hover:shadow-lg'
-              : 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500 shadow-md hover:shadow-lg'
+            : 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500 shadow-md hover:shadow-lg'
         }`}
       >
         {!isFeasible ? 'Not Feasible' : 'Select'}
