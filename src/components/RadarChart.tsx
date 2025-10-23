@@ -476,6 +476,51 @@ const RadarChart: React.FC<RadarChartProps> = ({
               <div className="h-[500px]">
                 <Radar data={prepareRadarChartDataWithIdeal()} options={radarOptions} />
               </div>
+
+              {/* Metrics Legend - Radar View Only */}
+              <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Metrics Legend</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <h5 className="text-sm font-medium text-green-800 mb-2">Positive Impact Metrics (Higher is Better)</h5>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <Flame size={16} className="text-red-500 mr-2" />
+                        <span className="text-sm">Fire Containment</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Shield size={16} className="text-blue-500 mr-2" />
+                        <span className="text-sm">Population Safety</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Scale size={16} className="text-purple-500 mr-2" />
+                        <span className="text-sm">Ethical Fairness</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-red-50 p-3 rounded-lg">
+                    <h5 className="text-sm font-medium text-red-800 mb-2">Negative Impact Metrics (Lower is Better)</h5>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <AlertTriangle size={16} className="text-orange-500 mr-2" />
+                        <span className="text-sm">Firefighter Risk</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Droplets size={16} className="text-blue-500 mr-2" />
+                        <span className="text-sm">Resource Use</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Building size={16} className="text-gray-500 mr-2" />
+                        <span className="text-sm">Infrastructure Damage</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Tree size={16} className="text-green-500 mr-2" />
+                        <span className="text-sm">Biodiversity Impact</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
