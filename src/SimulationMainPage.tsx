@@ -10,6 +10,7 @@ import RadarChart from './components/RadarChart';
 import AlternativeDecisionModal from './components/AlternativeDecisionModal';
 import CVRQuestionModal from './components/CVRQuestionModal';
 import AdaptivePreferenceView from './components/AdaptivePreferenceView';
+import CollapsibleHelpMessage from './components/CollapsibleHelpMessage';
 import { SimulationMetrics, DecisionOption as DecisionOptionType, ExplicitValue } from './types';
 import { scenarios } from './data/scenarios';
 import { TrackingManager } from './utils/trackingUtils';
@@ -1053,7 +1054,42 @@ const SimulationMainPage: React.FC = () => {
           </div>
         </div>
         
+        <CollapsibleHelpMessage
+          id="cumulative-metrics"
+          title="Understanding Your Cumulative Metrics"
+          variant="info"
+          defaultExpanded={currentScenarioIndex === 0}
+        >
+          <p>
+            <strong>These metrics track your performance across all scenarios.</strong> Each decision you make will affect these cumulative scores, and they carry forward to subsequent scenarios.
+          </p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li><strong>Lives Saved:</strong> Total lives protected by your decisions (higher is better)</li>
+            <li><strong>Resources & Infrastructure:</strong> Remaining capacity and condition (maintain above 30%)</li>
+            <li><strong>Environmental Impact:</strong> Biodiversity and nuclear safety (protect whenever possible)</li>
+          </ul>
+          <p className="mt-2 font-medium">
+            Your goal is to balance these competing priorities while making ethical decisions under pressure.
+          </p>
+        </CollapsibleHelpMessage>
+
         <MetricsDisplay metrics={metrics} animatingMetrics={animatingMetrics} />
+
+        <CollapsibleHelpMessage
+          id="scenario-context"
+          title="Understanding the Current Scenario"
+          variant="guidance"
+          defaultExpanded={currentScenarioIndex === 0}
+        >
+          <p>
+            Each scenario presents a <strong>unique wildfire crisis</strong> requiring immediate action. Read the scenario description carefully to understand:
+          </p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>The immediate threat and what's at stake</li>
+            <li>The context and constraints you're facing</li>
+            <li>Why this decision matters for the overall crisis</li>
+          </ul>
+        </CollapsibleHelpMessage>
 
         <div className="bg-gradient-to-br from-teal-50 via-teal-100 to-cyan-50 border-2 border-teal-300 rounded-lg shadow-lg p-3 mb-3">
           <h2 className="text-xs font-bold uppercase tracking-wider mb-1 text-teal-700">Current Scenario</h2>
@@ -1065,10 +1101,29 @@ const SimulationMainPage: React.FC = () => {
 
           {!selectedDecision ? (
             <>
+              <CollapsibleHelpMessage
+                id="decision-options"
+                title="How to Evaluate Your Options"
+                variant="guidance"
+                defaultExpanded={currentScenarioIndex === 0}
+              >
+                <p>
+                  <strong>Each option card shows the immediate impact</strong> of that decision on your cumulative metrics. Consider:
+                </p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Impact indicators:</strong> Green arrows (↑) show improvements, red arrows (↓) show costs</li>
+                  <li><strong>Trade-offs:</strong> Most decisions involve sacrificing some values for others</li>
+                  <li><strong>Expert opinions:</strong> Click any option to see what experts recommend</li>
+                </ul>
+                <p className="mt-2">
+                  <strong>Click "View Trade-Off Comparison"</strong> below to visualize how options differ across all metrics.
+                </p>
+              </CollapsibleHelpMessage>
+
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-base font-medium text-gray-800">Select Your Decision</h3>
               </div>
-              
+
               <div className="relative">
                 {showAlternativeNotification && (
                   <div className="mb-3 bg-gradient-to-r from-cyan-50 to-teal-50 border-2 border-cyan-300 rounded-lg p-3 shadow-lg animate-pulse">
@@ -1104,6 +1159,26 @@ const SimulationMainPage: React.FC = () => {
                 </div>
 
                 <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 mt-4 -mx-4 px-4 pb-2">
+                  {currentScenarioIndex === 0 && (
+                    <CollapsibleHelpMessage
+                      id="explore-alternatives"
+                      title="Important: Explore All Alternatives Before Deciding"
+                      variant="important"
+                      defaultExpanded={true}
+                    >
+                      <p>
+                        <strong>You must explore alternatives before confirming any decision.</strong> This ensures you've considered all available options.
+                      </p>
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li><strong>Explore Alternatives:</strong> View additional options beyond the initial two</li>
+                        <li><strong>Add to comparison:</strong> Bring alternative options into your main view</li>
+                        <li><strong>Compare visually:</strong> Use the Trade-Off Comparison tool to see differences</li>
+                      </ul>
+                      <p className="mt-2 font-medium">
+                        After exploring, you can proceed with any option that best aligns with your values.
+                      </p>
+                    </CollapsibleHelpMessage>
+                  )}
                   <div className="flex flex-col gap-2 relative">
                     <button
                       onClick={handleExploreAlternatives}
