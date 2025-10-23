@@ -10,6 +10,7 @@ import RadarChart from './components/RadarChart';
 import AlternativeDecisionModal from './components/AlternativeDecisionModal';
 import CVRQuestionModal from './components/CVRQuestionModal';
 import AdaptivePreferenceView from './components/AdaptivePreferenceView';
+import OnboardingTour from './components/OnboardingTour';
 import { SimulationMetrics, DecisionOption as DecisionOptionType, ExplicitValue } from './types';
 import { scenarios } from './data/scenarios';
 import { TrackingManager } from './utils/trackingUtils';
@@ -64,8 +65,21 @@ const SimulationMainPage: React.FC = () => {
   const [scenario1MoralValueReordered, setScenario1MoralValueReordered] = useState<string[]>([]);
   const [scenario2MoralValueReordered, setScenario2MoralValueReordered] = useState<string[]>([]);
   const [scenario3MoralValueReordered, setScenario3MoralValueReordered] = useState<string[]>([]);
+  const [showOnboardingTour, setShowOnboardingTour] = useState(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenSimulationTour');
+    if (!hasSeenTour && currentScenarioIndex === 0) {
+      setShowOnboardingTour(true);
+    }
+  }, [currentScenarioIndex]);
+
+  const handleCloseTour = () => {
+    setShowOnboardingTour(false);
+    localStorage.setItem('hasSeenSimulationTour', 'true');
+  };
 
   // Reset hasExploredAlternatives when scenario changes
   useEffect(() => {
@@ -1055,10 +1069,13 @@ const SimulationMainPage: React.FC = () => {
         
         <MetricsDisplay metrics={metrics} animatingMetrics={animatingMetrics} />
 
+        <div className="bg-gradient-to-br from-teal-50 via-teal-100 to-cyan-50 rounded-lg shadow-md p-6 mb-4 border-2 border-teal-200">
+          <h2 className="text-xl font-bold mb-3 text-teal-800 tracking-wide uppercase">Current Scenario</h2>
+          <h3 className="text-2xl font-bold mb-3 text-gray-900 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.title}</h3>
+          <p className="text-base text-gray-700 leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>{currentScenario.description}</p>
+        </div>
+
         <div className="bg-white rounded-lg shadow-md p-4 flex-1 flex flex-col overflow-hidden">
-          <h2 className="text-lg font-semibold mb-1 text-gray-700">Current Scenario</h2>
-          <h3 className="text-base font-medium mb-1 text-gray-800">{currentScenario.title}</h3>
-          <p className="text-sm text-gray-600 mb-3">{currentScenario.description}</p>
 
           {!selectedDecision ? (
             <>
@@ -1136,7 +1153,7 @@ const SimulationMainPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
+                <div className="flex flex-col gap-4 flex-1">
                   {[...getInitialOptions(), ...addedAlternatives].map((option) => (
                     <DecisionOption
                       key={option.id}
@@ -1229,6 +1246,11 @@ const SimulationMainPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <OnboardingTour
+        isOpen={showOnboardingTour}
+        onClose={handleCloseTour}
+      />
     </div>
   );
 };
