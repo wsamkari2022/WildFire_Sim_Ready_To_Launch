@@ -14,80 +14,84 @@ const CollapsibleHelpMessage: React.FC<CollapsibleHelpMessageProps> = ({
   title,
   children,
   variant = 'info',
-  defaultExpanded = true
+  defaultExpanded = false
 }) => {
   const storageKey = `help-message-${id}-hidden`;
+  const bubbleStorageKey = `help-message-bubble-dismissed`;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isPermanentlyHidden, setIsPermanentlyHidden] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
 
   useEffect(() => {
     const hidden = localStorage.getItem(storageKey) === 'true';
     setIsPermanentlyHidden(hidden);
-  }, [storageKey]);
+
+    const bubbleDismissed = localStorage.getItem(bubbleStorageKey) === 'true';
+    setShowBubble(!bubbleDismissed && !hidden);
+  }, [storageKey, bubbleStorageKey]);
 
   const handlePermanentHide = () => {
     localStorage.setItem(storageKey, 'true');
     setIsPermanentlyHidden(true);
   };
 
+  const handleDismissBubble = () => {
+    localStorage.setItem(bubbleStorageKey, 'true');
+    setShowBubble(false);
+  };
+
   if (isPermanentlyHidden) {
     return null;
   }
 
-  const variantStyles = {
-    info: {
-      container: 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-300',
-      icon: 'text-blue-600',
-      header: 'text-blue-900',
-      text: 'text-blue-800'
-    },
-    guidance: {
-      container: 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-300',
-      icon: 'text-emerald-600',
-      header: 'text-emerald-900',
-      text: 'text-emerald-800'
-    },
-    important: {
-      container: 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300',
-      icon: 'text-amber-600',
-      header: 'text-amber-900',
-      text: 'text-amber-800'
-    }
-  };
-
-  const styles = variantStyles[variant];
-
   return (
-    <div className={`border-2 ${styles.container} rounded-xl shadow-md mb-4 overflow-hidden transition-all duration-300`}>
-      <div className="flex items-center justify-between p-4">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-3 flex-1 text-left group"
-        >
-          <div className={`${styles.icon} transition-colors`}>
-            <Info size={20} />
+    <div className="relative mb-4">
+      {showBubble && (
+        <div className="absolute -top-12 right-8 z-20 animate-bounce">
+          <div className="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap font-medium">
+            Click the X to hide this message
+            <button
+              onClick={handleDismissBubble}
+              className="ml-2 hover:text-gray-200 transition-colors"
+            >
+              <X size={12} />
+            </button>
+            <div className="absolute top-full right-4 transform w-0 h-0 border-t-8 border-amber-400 border-x-8 border-x-transparent"></div>
           </div>
-          <h4 className={`font-semibold ${styles.header} text-sm group-hover:opacity-75 transition-opacity`}>
-            {title}
-          </h4>
-          <div className={`ml-auto ${styles.icon}`}>
-            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </div>
-        </button>
-        <button
-          onClick={handlePermanentHide}
-          className={`ml-2 ${styles.icon} hover:opacity-75 transition-opacity`}
-          title="Hide this message permanently"
-        >
-          <X size={18} />
-        </button>
-      </div>
-
-      {isExpanded && (
-        <div className={`px-4 pb-4 ${styles.text} text-sm leading-relaxed space-y-2 animate-in fade-in duration-200`}>
-          {children}
         </div>
       )}
+
+      <div className="border-2 bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400 rounded-xl shadow-md overflow-hidden transition-all duration-300">
+        <div className="flex items-center justify-between p-4">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-3 flex-1 text-left group"
+          >
+            <div className="text-yellow-600 transition-colors">
+              <Info size={20} />
+            </div>
+            <h4 className="font-semibold text-yellow-900 text-sm group-hover:opacity-75 transition-opacity">
+              {title}
+            </h4>
+            <div className="ml-auto text-yellow-600">
+              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </div>
+          </button>
+          <button
+            onClick={handlePermanentHide}
+            className="ml-2 text-yellow-600 hover:opacity-75 transition-opacity"
+            title="Hide this message permanently"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {isExpanded && (
+          <div className="px-4 pb-4 text-yellow-900 text-sm leading-relaxed space-y-2 animate-in fade-in duration-200">
+            {children}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

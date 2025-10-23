@@ -1057,8 +1057,6 @@ const SimulationMainPage: React.FC = () => {
         <CollapsibleHelpMessage
           id="cumulative-metrics"
           title="Understanding Your Cumulative Metrics"
-          variant="info"
-          defaultExpanded={currentScenarioIndex === 0}
         >
           <p>
             <strong>These metrics track your performance across all scenarios.</strong> Each decision you make will affect these cumulative scores, and they carry forward to subsequent scenarios.
@@ -1078,8 +1076,6 @@ const SimulationMainPage: React.FC = () => {
         <CollapsibleHelpMessage
           id="scenario-context"
           title="Understanding the Current Scenario"
-          variant="guidance"
-          defaultExpanded={currentScenarioIndex === 0}
         >
           <p>
             Each scenario presents a <strong>unique wildfire crisis</strong> requiring immediate action. Read the scenario description carefully to understand:
@@ -1104,8 +1100,6 @@ const SimulationMainPage: React.FC = () => {
               <CollapsibleHelpMessage
                 id="decision-options"
                 title="How to Evaluate Your Options"
-                variant="guidance"
-                defaultExpanded={currentScenarioIndex === 0}
               >
                 <p>
                   <strong>Each option card shows the immediate impact</strong> of that decision on your cumulative metrics. Consider:
@@ -1163,8 +1157,6 @@ const SimulationMainPage: React.FC = () => {
                     <CollapsibleHelpMessage
                       id="explore-alternatives"
                       title="Important: Explore All Alternatives Before Deciding"
-                      variant="important"
-                      defaultExpanded={true}
                     >
                       <p>
                         <strong>You must explore alternatives before confirming any decision.</strong> This ensures you've considered all available options.
