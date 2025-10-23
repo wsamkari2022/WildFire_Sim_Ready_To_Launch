@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Compass, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Compass, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
 import { explicitQuestions } from '../data/explicitQuestions';
 import type { ExplicitValue } from '../types/explicitValues';
 import axios from 'axios';
@@ -11,6 +11,8 @@ const ExplicitValuesPage: React.FC = () => {
   const [answers, setAnswers] = useState<{[key: number]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   const handleOptionSelect = (questionId: number, value: string) => {
     setAnswers(prev => ({
@@ -18,6 +20,19 @@ const ExplicitValuesPage: React.FC = () => {
       [questionId]: value
     }));
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      if (scrollPosition > 100 && !hasScrolled) {
+        setHasScrolled(true);
+        setShowScrollIndicator(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasScrolled]);
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length !== explicitQuestions.length) {
@@ -90,10 +105,27 @@ const ExplicitValuesPage: React.FC = () => {
       <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md mb-8">
           <p className="text-blue-700">
-            Please answer the following simple everyday dilemmas. Select the value that best reflects your personal beliefs. 
+            Please answer the following simple everyday dilemmas. Select the value that best reflects your personal beliefs.
             Your selections will serve as a baseline for later comparison.
           </p>
         </div>
+
+        {showScrollIndicator && (
+          <div className="fixed top-1/2 right-8 transform -translate-y-1/2 z-50 animate-bounce">
+            <div className="relative">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-2xl shadow-2xl max-w-xs">
+                <p className="text-sm font-semibold mb-1 flex items-center">
+                  <ChevronDown size={20} className="mr-2 animate-pulse" />
+                  Scroll Down!
+                </p>
+                <p className="text-xs opacity-90">
+                  Answer all five questions below
+                </p>
+              </div>
+              <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-purple-600"></div>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-8">
           {explicitQuestions.map((question) => (
