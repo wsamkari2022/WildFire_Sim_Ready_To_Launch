@@ -105,43 +105,64 @@ const AlternativeDecisionModal: React.FC<AlternativeDecisionModalProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="p-6 h-full flex flex-col">
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 p-4 rounded-xl mb-4">
-                    <h4 className="text-sm font-semibold text-purple-900 mb-1.5">About Alternative Decisions</h4>
-                    <p className="text-sm text-purple-700">
+                <div className="p-8 h-full flex flex-col">
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 p-5 rounded-2xl mb-6 shadow-sm">
+                    <h4 className="text-base font-bold text-purple-900 mb-2 flex items-center">
+                      <Lightbulb className="mr-2 text-purple-600" size={20} />
+                      About Alternative Decisions
+                    </h4>
+                    <p className="text-sm text-purple-700 leading-relaxed">
                       Our experts have analyzed alternative strategies that might offer different trade-offs.
                       These options provide unique approaches to handling the crisis, potentially balancing various factors in innovative ways.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 overflow-y-auto pr-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 flex-1 overflow-y-auto pr-2">
                     {alternativeOptions.map((option) => (
-                      <button
+                      <div
                         key={option.id}
-                        onClick={() => setSelectedOption(option)}
-                        className="text-left p-4 rounded-xl border-2 border-gray-200 hover:border-purple-400 bg-white hover:shadow-xl transition-all duration-300 group h-fit"
+                        className="flex flex-col bg-white rounded-2xl border-2 border-gray-200 hover:border-purple-400 hover:shadow-2xl transition-all duration-300 h-fit"
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <h5 className="font-semibold text-gray-900 text-base">{option.title}</h5>
-                          <span className="text-xs bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 px-2.5 py-1 rounded-full font-medium whitespace-nowrap ml-2">
-                            {getAcceptCount(option)}/5
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{option.description}</p>
-                        <div className="space-y-1">
-                          {option.riskInfo.slice(0, 2).map((risk, index) => (
-                            <div key={index} className="flex items-start">
-                              <span className="text-purple-500 mr-1.5 mt-0.5 font-bold">•</span>
-                              <p className="text-xs text-gray-700 line-clamp-2">{risk}</p>
+                        <div className="p-5 flex-1">
+                          <div className="flex items-start justify-between mb-3">
+                            <h5 className="font-bold text-gray-900 text-base leading-tight flex-1 mr-2">
+                              {option.title}
+                            </h5>
+                            <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 px-3 py-1.5 rounded-full font-bold whitespace-nowrap shadow-sm">
+                              <ThumbsUp size={14} />
+                              <span className="text-xs">{getAcceptCount(option)}/5</span>
                             </div>
-                          ))}
-                          {option.riskInfo.length > 2 && (
-                            <p className="text-xs text-purple-600 font-medium group-hover:underline">
-                              +{option.riskInfo.length - 2} more details...
-                            </p>
-                          )}
+                          </div>
+
+                          <p className="text-sm text-gray-600 mb-4 leading-relaxed line-clamp-2">
+                            {option.description}
+                          </p>
+
+                          <div className="space-y-2 mb-4">
+                            {option.riskInfo.slice(0, 2).map((risk, index) => (
+                              <div key={index} className="flex items-start bg-gray-50 rounded-lg p-2">
+                                <span className="text-purple-500 mr-2 mt-0.5 font-bold text-sm">•</span>
+                                <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{risk}</p>
+                              </div>
+                            ))}
+                            {option.riskInfo.length > 2 && (
+                              <p className="text-xs text-purple-600 font-semibold pl-2">
+                                +{option.riskInfo.length - 2} more details...
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </button>
+
+                        <div className="p-4 bg-gradient-to-r from-gray-50 to-purple-50 border-t-2 border-gray-100 rounded-b-2xl">
+                          <button
+                            onClick={() => setSelectedOption(option)}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                          >
+                            <ArrowRight size={18} />
+                            Select & View Details
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
