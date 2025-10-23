@@ -1103,23 +1103,23 @@ const SimulationMainPage: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 pt-3 mt-4 flex gap-3 justify-end">
-                  <div className="relative">
+                <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 mt-4 -mx-4 px-4 pb-2">
+                  <div className="flex flex-col gap-2 relative">
                     <button
                       onClick={handleExploreAlternatives}
-                      className={`flex items-center text-center text-sm px-4 py-2 rounded-md transition-all duration-300 relative ${
+                      className={`w-full flex items-center justify-center text-center text-base font-semibold px-6 py-3.5 rounded-lg transition-all duration-300 relative ${
                         availableAlternatives.length === 0
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                           : hasExploredAlternatives
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                          : 'bg-purple-300 text-purple-800 hover:bg-purple-400 animate-pulse shadow-lg shadow-purple-400/50 border-2 border-purple-200'
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl'
+                          : 'bg-gradient-to-r from-purple-500 to-pink-600 text-white hover:from-purple-600 hover:to-pink-700 animate-pulse shadow-xl shadow-purple-400/50'
                       }`}
                       disabled={availableAlternatives.length === 0}
                     >
                       {hasExploredAlternatives ? (
-                        <Eye size={16} className="mr-1.5" />
+                        <Eye size={20} className="mr-2" />
                       ) : (
-                        <Lightbulb size={16} className="mr-1.5" />
+                        <Lightbulb size={20} className="mr-2" />
                       )}
                       {hasExploredAlternatives
                         ? `Alternatives Reviewed ${addedAlternatives.length > 0 ? `(${addedAlternatives.length} added)` : ''}`
@@ -1127,28 +1127,29 @@ const SimulationMainPage: React.FC = () => {
                       }
                       {!hasExploredAlternatives && availableAlternatives.length > 0 && (
                         <>
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-400 rounded-full animate-ping"></span>
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-400 rounded-full"></span>
                         </>
                       )}
                     </button>
 
                     {!hasExploredAlternatives && availableAlternatives.length > 0 && (
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
-                        <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-md shadow-lg whitespace-nowrap animate-bounce">
+                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-10">
+                        <div className="bg-purple-600 text-white text-sm font-medium px-3 py-2 rounded-lg shadow-xl whitespace-nowrap animate-bounce">
                           Exploring is Required
-                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-500"></div>
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-purple-600"></div>
                         </div>
                       </div>
                     )}
+
+                    <button
+                      onClick={() => setShowRadarChart(true)}
+                      className="w-full flex items-center justify-center text-center text-base font-semibold bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700 px-6 py-3.5 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                    >
+                      <BarChart2 size={20} className="mr-2" />
+                      View Trade-Off Comparison
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setShowRadarChart(true)}
-                    className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-md transition-colors duration-200"
-                  >
-                    <BarChart2 size={16} className="mr-1.5" />
-                    View Trade-Off Comparison
-                  </button>
                 </div>
               </div>
             </>
