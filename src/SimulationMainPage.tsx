@@ -599,6 +599,7 @@ const SimulationMainPage: React.FC = () => {
       setShowAdaptivePreference(true);
 
       // Note: APA tracking will be done when user actually reorders in AdaptivePreferenceView
+      // For scenario 3, no reordering is needed as it's the last scenario
     }
   };
 
@@ -1034,6 +1035,8 @@ const SimulationMainPage: React.FC = () => {
         selectedOption={selectedDecision!}
         mainScenario={currentScenario}
         onConfirm={handleRankedOptionSelect}
+        scenarioId={currentScenario.id}
+        isLastScenario={currentScenarioIndex === scenarios.length - 1}
       />
     );
   }

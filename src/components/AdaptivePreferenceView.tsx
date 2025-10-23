@@ -91,6 +91,8 @@ interface AdaptivePreferenceViewProps {
   selectedOption: DecisionOption;
   mainScenario: MainScenario;
   onConfirm: (option: DecisionOption, isTop2: boolean) => void;
+  scenarioId?: number;
+  isLastScenario?: boolean;
 }
 
 const simulationMetrics = [
@@ -111,11 +113,13 @@ const moralValues = [
   { id: 'nonmaleficence', label: 'Nonmaleficence' }
 ];
 
-const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({ 
-  onBack, 
+const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
+  onBack,
   selectedOption,
   mainScenario,
-  onConfirm
+  onConfirm,
+  scenarioId = 1,
+  isLastScenario = false
 }) => {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [valueOrder, setValueOrder] = useState([
@@ -211,9 +215,70 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
 
   const { comparisonTableColumnContent } = selectedOption;
 
+  // Special case: Scenario 3 with CVR "No" response - show comparison table only
+  if (isLastScenario && scenarioId === 3) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 flex-1 flex flex-col">
+        <button
+          onClick={onBack}
+          className="self-start mb-6 text-gray-600 hover:text-gray-800 flex items-center gap-2"
+        >
+          <ArrowLeft size={20} />
+          Back to Scenario 3
+        </button>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Adaptive Preference Analysis
+          </h2>
+
+          <ComparisonTable
+            firstColumn={{
+              title: comparisonTableColumnContent.firstColumnTitle,
+              selectedPreference: comparisonTableColumnContent.firstColumnSelectedPreference,
+              value: comparisonTableColumnContent.firstValue,
+              affected: comparisonTableColumnContent.firstColumnAffected,
+              risk: comparisonTableColumnContent.firstColumnRisk,
+              userChoice: comparisonTableColumnContent.firstColumnuserChoice
+            }}
+            secondColumn={{
+              title: comparisonTableColumnContent.secondColumnTitle,
+              selectedPreference: comparisonTableColumnContent.secondColumnSelectedPreference,
+              value: comparisonTableColumnContent.secondValue,
+              affected: comparisonTableColumnContent.secondColumnaffected,
+              risk: comparisonTableColumnContent.secondColumnRisk,
+              userChoice: comparisonTableColumnContent.secondColumnuserChoice
+            }}
+          />
+        </div>
+
+        <div className="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="text-blue-500 mt-0.5" size={20} />
+            <div>
+              <p className="text-blue-900 font-medium mb-1">This is the last scenario</p>
+              <p className="text-blue-800 text-sm">
+                You don't need to reorder your values since there are no more scenarios after this one. You can review the comparison above and return to the simulation to make a different choice if needed.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onBack}
+          className="mt-4 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors duration-200"
+        >
+          <ArrowLeft size={20} />
+          Return to Scenario 3
+        </button>
+      </div>
+    );
+  }
+
+  // Normal flow for scenarios 1 and 2
   return (
     <div className="bg-white rounded-lg shadow-md p-6 flex-1 flex flex-col">
-      <button 
+      <button
         onClick={onBack}
         className="self-start mb-6 text-gray-600 hover:text-gray-800 flex items-center gap-2"
       >
@@ -225,7 +290,7 @@ const AdaptivePreferenceView: React.FC<AdaptivePreferenceViewProps> = ({
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Adaptive Preference Analysis
         </h2>
-        
+
         <ComparisonTable
           firstColumn={{
             title: comparisonTableColumnContent.firstColumnTitle,
