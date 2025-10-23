@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Check, BarChart2, Lightbulb, X, AlertTriangle, Eye, HelpCircle } from 'lucide-react';
+import { Flame, Check, BarChart2, Lightbulb, X, AlertTriangle, Eye } from 'lucide-react';
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import MetricsDisplay from './components/MetricsDisplay';
 import DecisionOption from './components/DecisionOption';
@@ -10,7 +10,6 @@ import RadarChart from './components/RadarChart';
 import AlternativeDecisionModal from './components/AlternativeDecisionModal';
 import CVRQuestionModal from './components/CVRQuestionModal';
 import AdaptivePreferenceView from './components/AdaptivePreferenceView';
-import SimulationTour from './components/SimulationTour';
 import { SimulationMetrics, DecisionOption as DecisionOptionType, ExplicitValue } from './types';
 import { scenarios } from './data/scenarios';
 import { TrackingManager } from './utils/trackingUtils';
@@ -65,52 +64,8 @@ const SimulationMainPage: React.FC = () => {
   const [scenario1MoralValueReordered, setScenario1MoralValueReordered] = useState<string[]>([]);
   const [scenario2MoralValueReordered, setScenario2MoralValueReordered] = useState<string[]>([]);
   const [scenario3MoralValueReordered, setScenario3MoralValueReordered] = useState<string[]>([]);
-  const [runTour, setRunTour] = useState(false);
 
   const currentScenario = scenarios[currentScenarioIndex];
-
-  useEffect(() => {
-    const hasSeenTour = localStorage.getItem('simulationTourCompleted');
-    if (!hasSeenTour && currentScenarioIndex === 0) {
-      setTimeout(() => {
-        setRunTour(true);
-      }, 500);
-    }
-  }, [currentScenarioIndex]);
-
-  const handleTourComplete = () => {
-    setRunTour(false);
-    localStorage.setItem('simulationTourCompleted', 'true');
-
-    const sessionId = DatabaseService.getSessionId();
-    DatabaseService.insertCustomEvent({
-      session_id: sessionId,
-      event_type: 'tour_completed',
-      event_data: {
-        tour_name: 'simulation_onboarding',
-        completed_at: new Date().toISOString()
-      }
-    });
-  };
-
-  const handleTourSkip = () => {
-    setRunTour(false);
-    localStorage.setItem('simulationTourCompleted', 'true');
-
-    const sessionId = DatabaseService.getSessionId();
-    DatabaseService.insertCustomEvent({
-      session_id: sessionId,
-      event_type: 'tour_skipped',
-      event_data: {
-        tour_name: 'simulation_onboarding',
-        skipped_at: new Date().toISOString()
-      }
-    });
-  };
-
-  const handleRestartTour = () => {
-    setRunTour(true);
-  };
 
   // Reset hasExploredAlternatives when scenario changes
   useEffect(() => {
@@ -1110,7 +1065,7 @@ const SimulationMainPage: React.FC = () => {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-base font-medium text-gray-800">Select Your Decision</h3>
                 <div className="flex gap-2">
-                  <div className="relative explore-alternatives-tour">
+                  <div className="relative">
                     <button 
                       onClick={handleExploreAlternatives}
                       className={`flex items-center text-center text-sm px-3 py-1.5 rounded-md transition-all duration-300 relative ${
@@ -1149,9 +1104,9 @@ const SimulationMainPage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <button
+                  <button 
                     onClick={() => setShowRadarChart(true)}
-                    className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md transition-colors duration-200 radar-chart-tour"
+                    className="flex items-center text-center text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md transition-colors duration-200"
                   >
                     <BarChart2 size={16} className="mr-1.5" />
                     View Trade-Off Comparison
@@ -1181,7 +1136,7 @@ const SimulationMainPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 decision-options-tour">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                   {[...getInitialOptions(), ...addedAlternatives].map((option) => (
                     <DecisionOption
                       key={option.id}
@@ -1197,12 +1152,6 @@ const SimulationMainPage: React.FC = () => {
           ) : null}
         </div>
       </div>
-
-      <SimulationTour
-        run={runTour}
-        onComplete={handleTourComplete}
-        onSkip={handleTourSkip}
-      />
 
       <ExpertAnalysisModal
         isOpen={showExpertModal}
