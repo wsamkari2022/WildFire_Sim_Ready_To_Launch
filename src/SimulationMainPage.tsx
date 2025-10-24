@@ -1105,7 +1105,6 @@ const SimulationMainPage: React.FC = () => {
                   <strong>Each option card shows the immediate impact</strong> of that decision on your cumulative metrics. Consider:
                 </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li><strong>Impact indicators:</strong> Green arrows (↑) show improvements, red arrows (↓) show costs</li>
                   <li><strong>Trade-offs:</strong> Most decisions involve sacrificing some values for others</li>
                   <li><strong>Expert opinions:</strong> Click any option to see what experts recommend</li>
                 </ul>
@@ -1163,7 +1162,7 @@ const SimulationMainPage: React.FC = () => {
                       </p>
                       <ul className="list-disc list-inside mt-2 space-y-1">
                         <li><strong>Explore Alternatives:</strong> View additional options beyond the initial two</li>
-                        <li><strong>Add to comparison:</strong> Bring alternative options into your main view</li>
+                        <li><strong>Add Alternative to Decision List:</strong> Bring alternative options into your main view</li>
                         <li><strong>Compare visually:</strong> Use the Trade-Off Comparison tool to see differences</li>
                       </ul>
                       <p className="mt-2 font-medium">
