@@ -151,7 +151,7 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
               <div className="flex-1">
                 <h5 className="font-bold text-yellow-900 text-base mb-2">Why You're Seeing This Page</h5>
                 <p className="text-yellow-800 text-sm leading-relaxed mb-3">
-                  This is your <strong>final review</strong> before committing to this decision. You're seeing a complete summary of what you've chosen and how it will affect your mission.
+                  This is your <strong>final review</strong> before committing to this decision. You're seeing a summary of what you've chosen and how it will affect your mission.
                 </p>
                 <div className="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded-r-lg">
                   <p className="text-yellow-900 text-sm font-semibold mb-1">
