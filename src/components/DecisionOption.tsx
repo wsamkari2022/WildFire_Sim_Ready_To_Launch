@@ -106,7 +106,7 @@ const DecisionOption: React.FC<DecisionOptionProps> = ({ option, onSelect, curre
       )}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1">
-          <h4 className={`text-base font-semibold ${!isFeasible ? 'text-red-800' : 'text-gray-900'} mb-1 ${!isFeasible ? 'ml-6' : ''}`}>
+          <h4 className={`text-lg font-bold ${!isFeasible ? 'text-red-800' : 'bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent'} mb-1 ${!isFeasible ? 'ml-6' : ''} tracking-tight`}>
             {option.title}
           </h4>
           <p className="text-gray-700 text-sm leading-relaxed">{option.description}</p>
