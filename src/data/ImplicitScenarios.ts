@@ -60,8 +60,8 @@ export const scenarios: PreferenceScenario[] = [
         title: '🛡️ Workplace Safety Protocol',
         scenario: 'A manufacturing plant must decide between maintaining current production levels with standard safety measures or reducing output to implement enhanced safety protocols.',
         options: [
-            { text: 'Maintain production with current safety (efficiency)', value: 'efficiency' },
-            { text: 'Reduce output for enhanced safety (safety)', value: 'safety' }
+            { text: 'Maintain production with current safety', value: 'efficiency' },
+            { text: 'Reduce output for enhanced safety', value: 'safety' }
         ],
         followUpQuestions: {
             efficiency: {
@@ -87,8 +87,8 @@ export const scenarios: PreferenceScenario[] = [
         title: '⚖️ Resource Distribution',
         scenario: 'A community must decide how to distribute limited educational resources: either equally across all schools or based on individual school needs and performance.',
         options: [
-            { text: 'Equal distribution (fairness)', value: 'fairness' },
-            { text: 'Need-based distribution (efficiency)', value: 'efficiency' }
+            { text: 'Equal distribution', value: 'fairness' },
+            { text: 'Need-based distribution', value: 'efficiency' }
         ],
         followUpQuestions: {
             fairness: {
