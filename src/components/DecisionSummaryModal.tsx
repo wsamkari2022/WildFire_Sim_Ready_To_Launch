@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, ThumbsUp, ThumbsDown, Users, Skull, Droplets, Building, Trees as Tree, Factory, AlertTriangle } from 'lucide-react';
+import { X, Check, ThumbsUp, ThumbsDown, Users, Skull, Droplets, Building, Trees as Tree, Factory, AlertTriangle, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { DecisionOption } from '../types';
 
 interface DecisionSummaryModalProps {
@@ -20,6 +20,7 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
   onReviewAlternatives
 }) => {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
+  const [isImpactExpanded, setIsImpactExpanded] = useState(true);
 
   if (!isOpen) return null;
 
@@ -121,6 +122,35 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
 
         {/* Body */}
         <div className="p-6 flex-1 overflow-auto">
+          {/* Informative Message */}
+          <div className="mb-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl shadow-md p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <Info className="text-yellow-600" size={24} />
+              </div>
+              <div className="flex-1">
+                <h5 className="font-bold text-yellow-900 text-base mb-2">Why You're Seeing This Page</h5>
+                <p className="text-yellow-800 text-sm leading-relaxed mb-3">
+                  This is your <strong>final review</strong> before committing to this decision. You're seeing a complete summary of what you've chosen and how it will affect your mission.
+                </p>
+                <div className="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded-r-lg">
+                  <p className="text-yellow-900 text-sm font-semibold mb-1">
+                    Important: What Happens When You Click "Confirm Decision"
+                  </p>
+                  <ul className="text-yellow-800 text-sm space-y-1 ml-4 list-disc">
+                    <li>This option's impacts will be <strong>permanently applied</strong> to your cumulative simulation scores</li>
+                    <li>All metrics (lives saved, resources, infrastructure, etc.) will be <strong>updated immediately</strong></li>
+                    <li>These changes will <strong>carry forward</strong> to the next scenario, affecting your future options</li>
+                    <li>You <strong>cannot undo</strong> this decision once confirmed</li>
+                  </ul>
+                </div>
+                <p className="text-yellow-800 text-xs mt-2 italic">
+                  Take your time to review the expert consensus and impact summary below before confirming.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="mb-6">
             <h4 className="text-lg font-medium text-gray-800 mb-2">{option.title}</h4>
             <p className="text-gray-600 text-sm">{option.description}</p>
@@ -144,10 +174,20 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
             </div>
           </div>
 
-          {/* Impact Summary */}
+          {/* Impact Summary - Collapsible */}
           <div className="mb-6">
-            <h5 className="font-medium text-gray-700 mb-3">Impact Summary</h5>
-            <div className="space-y-2">
+            <button
+              onClick={() => setIsImpactExpanded(!isImpactExpanded)}
+              className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors mb-3 group"
+            >
+              <h5 className="font-medium text-gray-700">Impact Summary</h5>
+              <div className="text-gray-600">
+                {isImpactExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+
+            {isImpactExpanded && (
+              <div className="space-y-2 animate-in fade-in duration-200">
               <div className="flex items-center justify-between p-3 bg-green-50 rounded border-l-4 border-green-400">
                 <div className="flex items-center gap-2">
                   <Users size={16} className="text-green-600" />
@@ -212,6 +252,7 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {!canConfirm && (
