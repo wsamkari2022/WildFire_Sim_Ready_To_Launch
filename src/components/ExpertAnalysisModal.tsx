@@ -32,29 +32,38 @@ const ExpertAnalysisModal: React.FC<ExpertAnalysisModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center p-1 z-50 text-[8px]">
-      <div className="bg-white rounded-md shadow-md max-w-[180px] w-full scale-[0.6]">
-        <div className="flex items-center justify-between p-1 border-b border-gray-200">
-          <h3 className="text-[8px] font-semibold text-gray-800 truncate">{option.title}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100"
-          >
-            <X size={10} />
+    <div
+      className="fixed inset-0"
+      style={{
+        position: 'absolute',
+        top: '-9999px',
+        left: '-9999px',
+        width: '1px',
+        height: '1px',
+        overflow: 'hidden',
+        opacity: 0,
+        pointerEvents: 'none',
+        zIndex: -1
+      }}
+    >
+      <div className="bg-white text-[6px] rounded-sm shadow-sm max-w-[60px] w-full p-[1px]">
+        <div className="flex items-center justify-between border-b border-gray-200 p-[1px]">
+          <h3 className="font-semibold text-gray-800 truncate">{option.title}</h3>
+          <button onClick={onClose} className="text-gray-400 p-[1px]">
+            <X size={8} />
           </button>
         </div>
 
-        <div className="p-1">
+        <div className="p-[1px]">
           <div className="flex justify-center">
             <button
               onClick={onKeepChoice}
               disabled={!hasExploredAlternatives}
-              className={`px-1.5 py-0.5 rounded-sm text-[7px] transition-all duration-200 font-medium shadow-sm ${
+              className={`px-[2px] py-[1px] rounded-sm text-[5px] transition-all duration-200 font-medium ${
                 hasExploredAlternatives
-                  ? 'bg-gradient-to-r from-blue-400 to-indigo-400 text-white hover:from-blue-500 hover:to-indigo-500'
+                  ? 'bg-gradient-to-r from-blue-400 to-indigo-400 text-white'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
               }`}
-              title={!hasExploredAlternatives ? "Review alternatives to enable this option" : ""}
             >
               Keep
             </button>
