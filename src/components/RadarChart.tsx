@@ -410,24 +410,17 @@ const RadarChart: React.FC<RadarChartProps> = ({
                       onClick={() => handleToggleClick(option.id)}
                       className={`w-full p-2 rounded-lg flex items-center justify-between transition-all duration-200 ${
                         toggledOptions[option.id]
-                          ? option.isAlternative
-                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                          ? 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                           : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
                       } ${showToggleTooltip && index === 0 ? 'ring-2 ring-purple-300 ring-offset-2' : ''}`}
                     >
                       <div className="flex items-center">
                         <span className={`w-3 h-3 rounded-full mr-2 ${
                           toggledOptions[option.id]
-                            ? option.isAlternative ? 'bg-blue-500' : 'bg-gray-500'
+                            ? 'bg-gray-500'
                             : 'bg-gray-300'
                         }`}></span>
                         <span className="text-sm font-medium">{option.title}</span>
-                        {option.isAlternative && (
-                          <span className="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">
-                            Alternative
-                          </span>
-                        )}
                       </div>
                       {toggledOptions[option.id] ? (
                         <Eye size={16} className="text-current" />
