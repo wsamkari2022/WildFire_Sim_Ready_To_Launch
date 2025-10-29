@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Shield, Zap, Leaf, Scale, Ban, ThumbsUp, ThumbsDown, MessageCircle, Minus } from 'lucide-react';
 import { DecisionOption } from '../types';
 
 interface ExpertAnalysisProps {
@@ -7,113 +7,91 @@ interface ExpertAnalysisProps {
 }
 
 const ExpertAnalysis: React.FC<ExpertAnalysisProps> = ({ decision }) => {
-  const getRecommendationIcon = (recommendation: "Accept" | "Reject") => {
-    return recommendation === "Accept" ? 
-      <ThumbsUp className="text-green-500" size={14} /> : 
-      <ThumbsDown className="text-red-500" size={14} />;
+  const getRecommendationIcon = (recommendation: "Accept" | "Reject" | "Neutral") => {
+    switch (recommendation) {
+      case "Accept":
+        return <ThumbsUp className="text-green-500\" size={14} />;
+      case "Reject":
+        return <ThumbsDown className="text-red-500" size={14} />;
+      case "Neutral":
+        return <Minus className="text-gray-500" size={14} />;
+      default:
+        return null;
+    }
+  };
+
+  const getRecommendationStyle = (recommendation: "Accept" | "Reject" | "Neutral") => {
+    switch (recommendation) {
+      case "Accept":
+        return "bg-green-100 text-green-800";
+      case "Reject":
+        return "bg-red-100 text-red-800";
+      case "Neutral":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "";
+    }
+  };
+
+  const getExpertIcon = (expertType: string) => {
+    switch (expertType) {
+      case 'safety':
+        return <Shield className="text-red-500\" size={14} />;
+      case 'efficiency':
+        return <Zap className="text-yellow-500" size={14} />;
+      case 'sustainability':
+        return <Leaf className="text-green-500" size={14} />;
+      case 'fairness':
+        return <Scale className="text-blue-500" size={14} />;
+      case 'nonmaleficence':
+        return <Ban className="text-purple-500" size={14} />;
+      default:
+        return <MessageCircle className="text-gray-500" size={14} />;
+    }
+  };
+
+  const getExpertTitle = (expertType: string) => {
+    return expertType.charAt(0).toUpperCase() + expertType.slice(1) + ' Expert';
   };
 
   return (
-    <div className="space-y-2 overflow-y-auto max-h-64 pr-1">
-      {/* Safety Expert */}
-      <div className="bg-white p-2 rounded border border-gray-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Shield className="text-red-500 mr-1" size={14} />
-            <h5 className="text-xs font-semibold text-gray-700">Safety Expert</h5>
+    <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-400px)] pr-1">
+      {Object.entries(decision.expertOpinions).map(([expertType, opinion]) => (
+        <div key={expertType} className="bg-white p-3 rounded-lg border border-gray-200 transition-all duration-200 hover:shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              {getExpertIcon(expertType)}
+              <h5 className="text-sm font-semibold text-gray-700">{getExpertTitle(expertType)}</h5>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getRecommendationStyle(opinion.recommendation)}`}>
+                {opinion.recommendation}
+              </span>
+              {getRecommendationIcon(opinion.recommendation)}
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className={`text-xs font-medium ${decision.expertOpinions.safety.recommendation === "Accept" ? "text-green-600" : "text-red-600"} mr-1`}>
-              {decision.expertOpinions.safety.recommendation}
-            </span>
-            {getRecommendationIcon(decision.expertOpinions.safety.recommendation)}
-          </div>
-        </div>
-        <div className="mb-1">
-          <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">Summary:</span> {decision.expertOpinions.safety.summary}</p>
-          <p className="text-xs text-gray-600"><span className="font-semibold">Comparison:</span> {decision.expertOpinions.safety.comparison}</p>
-        </div>
-      </div>
-      
-      {/* Efficiency Expert */}
-      <div className="bg-white p-2 rounded border border-gray-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Zap className="text-yellow-500 mr-1" size={14} />
-            <h5 className="text-xs font-semibold text-gray-700">Efficiency Expert</h5>
-          </div>
-          <div className="flex items-center">
-            <span className={`text-xs font-medium ${decision.expertOpinions.efficiency.recommendation === "Accept" ? "text-green-600" : "text-red-600"} mr-1`}>
-              {decision.expertOpinions.efficiency.recommendation}
-            </span>
-            {getRecommendationIcon(decision.expertOpinions.efficiency.recommendation)}
-          </div>
-        </div>
-        <div className="mb-1">
-          <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">Summary:</span> {decision.expertOpinions.efficiency.summary}</p>
-          <p className="text-xs text-gray-600"><span className="font-semibold">Comparison:</span> {decision.expertOpinions.efficiency.comparison}</p>
-        </div>
-      </div>
-      
-      {/* Sustainability Expert */}
-      <div className="bg-white p-2 rounded border border-gray-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Leaf className="text-green-500 mr-1" size={14} />
-            <h5 className="text-xs font-semibold text-gray-700">Sustainability Expert</h5>
-          </div>
-          <div className="flex items-center">
-            <span className={`text-xs font-medium ${decision.expertOpinions.sustainability.recommendation === "Accept" ? "text-green-600" : "text-red-600"} mr-1`}>
-              {decision.expertOpinions.sustainability.recommendation}
-            </span>
-            {getRecommendationIcon(decision.expertOpinions.sustainability.recommendation)}
+          
+          <div className="space-y-2">
+            <div className="bg-gray-50 p-2 rounded">
+              <p className="text-xs text-gray-700">
+                <span className="font-semibold">Analysis:</span> {opinion.summary}
+              </p>
+            </div>
+            
+            <div className="bg-blue-50 p-2 rounded">
+              <p className="text-xs text-blue-900">
+                <span className="font-semibold">Comparison:</span> {opinion.comparison}
+              </p>
+            </div>
+
+            <div className="bg-purple-50 p-2 rounded">
+              <p className="text-xs text-purple-900">
+                <span className="font-semibold">Confidence:</span> {opinion.confidence}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="mb-1">
-          <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">Summary:</span> {decision.expertOpinions.sustainability.summary}</p>
-          <p className="text-xs text-gray-600"><span className="font-semibold">Comparison:</span> {decision.expertOpinions.sustainability.comparison}</p>
-        </div>
-      </div>
-      
-      {/* Fairness Expert */}
-      <div className="bg-white p-2 rounded border border-gray-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Scale className="text-blue-500 mr-1" size={14} />
-            <h5 className="text-xs font-semibold text-gray-700">Fairness Expert</h5>
-          </div>
-          <div className="flex items-center">
-            <span className={`text-xs font-medium ${decision.expertOpinions.fairness.recommendation === "Accept" ? "text-green-600" : "text-red-600"} mr-1`}>
-              {decision.expertOpinions.fairness.recommendation}
-            </span>
-            {getRecommendationIcon(decision.expertOpinions.fairness.recommendation)}
-          </div>
-        </div>
-        <div className="mb-1">
-          <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">Summary:</span> {decision.expertOpinions.fairness.summary}</p>
-          <p className="text-xs text-gray-600"><span className="font-semibold">Comparison:</span> {decision.expertOpinions.fairness.comparison}</p>
-        </div>
-      </div>
-      
-      {/* Nonmaleficence Expert */}
-      <div className="bg-white p-2 rounded border border-gray-200">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Ban className="text-purple-500 mr-1" size={14} />
-            <h5 className="text-xs font-semibold text-gray-700">Nonmaleficence Expert</h5>
-          </div>
-          <div className="flex items-center">
-            <span className={`text-xs font-medium ${decision.expertOpinions.nonmaleficence.recommendation === "Accept" ? "text-green-600" : "text-red-600"} mr-1`}>
-              {decision.expertOpinions.nonmaleficence.recommendation}
-            </span>
-            {getRecommendationIcon(decision.expertOpinions.nonmaleficence.recommendation)}
-          </div>
-        </div>
-        <div className="mb-1">
-          <p className="text-xs text-gray-600 mb-1"><span className="font-semibold">Summary:</span> {decision.expertOpinions.nonmaleficence.summary}</p>
-          <p className="text-xs text-gray-600"><span className="font-semibold">Comparison:</span> {decision.expertOpinions.nonmaleficence.comparison}</p>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

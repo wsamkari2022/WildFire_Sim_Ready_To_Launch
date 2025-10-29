@@ -4,6 +4,7 @@ import { Flame, Check, BarChart2, Lightbulb, X, AlertTriangle, Eye } from 'lucid
 import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import MetricsDisplay from './components/MetricsDisplay';
 import DecisionOption from './components/DecisionOption';
+import ExpertAnalysisModal from './components/ExpertAnalysisModal';
 import DecisionSummaryModal from './components/DecisionSummaryModal';
 import RadarChart from './components/RadarChart';
 import AlternativeDecisionModal from './components/AlternativeDecisionModal';
@@ -41,7 +42,9 @@ const SimulationMainPage: React.FC = () => {
   const [showAlternativesModal, setShowAlternativesModal] = useState(false);
   const [showCVRModal, setShowCVRModal] = useState(false);
   const [showAdaptivePreference, setShowAdaptivePreference] = useState(false);
+  const [showExpertModal, setShowExpertModal] = useState(false);
   const [showDecisionSummary, setShowDecisionSummary] = useState(false);
+  const [tempSelectedOption, setTempSelectedOption] = useState<DecisionOptionType | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewOption, setReviewOption] = useState<DecisionOptionType | null>(null);
   const [addedAlternatives, setAddedAlternatives] = useState<DecisionOptionType[]>([]);
@@ -486,13 +489,26 @@ const SimulationMainPage: React.FC = () => {
     // Mark that this selection is NOT from ranked view
     setIsFromRankedView(false);
 
+    setTempSelectedOption(decision);
+    setShowExpertModal(true);
+  };
+
+  const handleKeepChoice = () => {
+    if (!tempSelectedOption) return;
+    
+    setShowExpertModal(false);
+    
+    // Check if the selected option's value matches user's stable values
+    const optionValue = tempSelectedOption.label.toLowerCase();
+    const isAligned = matchedStableValues.includes(optionValue);
+    
     // If the option is aligned with user's values, update the MoralValuesReorderList
     if (isAligned) {
       // Get current matched stable values and moral values reorder list
       const savedMatchedValues = localStorage.getItem('finalValues');
       const existingMoralValuesReorder = localStorage.getItem('MoralValuesReorderList');
       let allAvailableValues: Array<{id: string, label: string}> = [];
-
+      
       // First, try to get from existing reorder list
       if (existingMoralValuesReorder) {
         try {
@@ -501,7 +517,7 @@ const SimulationMainPage: React.FC = () => {
           console.error('Error parsing existing MoralValuesReorderList:', error);
         }
       }
-
+      
       // If no existing reorder list, get from matched stable values
       if (savedMatchedValues && allAvailableValues.length === 0) {
         try {
@@ -514,42 +530,45 @@ const SimulationMainPage: React.FC = () => {
           console.error('Error parsing matched stable values:', error);
         }
       }
-
+      
       // Remove the selected value from its current position and add it to the top
       const filteredValues = allAvailableValues.filter(v => v.id !== optionValue);
       const newMoralValuesReorderList = [
-        { id: optionValue, label: decision.label },
+        { id: optionValue, label: tempSelectedOption.label },
         ...filteredValues
       ];
-
+      
       // Save to localStorage
       localStorage.setItem('MoralValuesReorderList', JSON.stringify(newMoralValuesReorderList));
-
+      
       // Update the matched stable values to reflect the new priority
       setMatchedStableValues(prev => {
         const updated = [optionValue, ...prev.filter(v => v !== optionValue)];
         return updated;
       });
-
+      
       console.log('Updated MoralValuesReorderList for aligned choice:', newMoralValuesReorderList);
     }
-
-    if (!isAligned && decision.cvrQuestion) {
-      setSelectedDecision(decision);
+    
+    if (!isAligned && tempSelectedOption.cvrQuestion) {
+      setSelectedDecision(tempSelectedOption);
       setShowCVRModal(true);
 
       // Track CVR visit
-      TrackingManager.recordCVRVisit(currentScenario.id, decision.id);
+      TrackingManager.recordCVRVisit(currentScenario.id, tempSelectedOption.id);
     } else {
-      setSelectedDecision(decision);
+      setSelectedDecision(tempSelectedOption);
       setShowDecisionSummary(true);
     }
+    setTempSelectedOption(null);
   };
 
   const handleReviewAlternatives = () => {
+    setShowExpertModal(false);
     setShowDecisionSummary(false);
     setHasExploredAlternatives(true);
     setShowAlternativesModal(true);
+    setTempSelectedOption(null);
   };
 
   const handleCVRAnswer = (answer: boolean) => {
@@ -1216,6 +1235,19 @@ const SimulationMainPage: React.FC = () => {
           ) : null}
         </div>
       </div>
+
+      <ExpertAnalysisModal
+        isOpen={showExpertModal}
+        onClose={() => {
+          setShowExpertModal(false);
+          setTempSelectedOption(null);
+        }}
+        option={tempSelectedOption!}
+        onKeepChoice={handleKeepChoice}
+        onReviewAlternatives={handleReviewAlternatives}
+        isAligned={tempSelectedOption ? matchedStableValues.includes(tempSelectedOption.label.toLowerCase()) : false}
+        hasExploredAlternatives={hasExploredAlternatives}
+      />
 
       <DecisionSummaryModal
         isOpen={showDecisionSummary}
