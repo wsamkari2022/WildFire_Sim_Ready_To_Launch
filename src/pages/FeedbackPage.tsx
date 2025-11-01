@@ -430,17 +430,29 @@ const FeedbackPage: React.FC = () => {
       setImplicitValueCounts(implicitCounts);
 
       const trends = initializeValueTrends();
+      const finalTopTwoValues = JSON.parse(localStorage.getItem('FinalTopTwoValues') || '[]');
 
       // Initialize all values with zeros for all 3 scenarios
       Object.keys(trends).forEach(value => {
         trends[value] = [0, 0, 0];
       });
 
-      // Set 100 for the scenarios where each value was actually selected
+      // Set values based on selection and top-two status
       simulationOutcomes.forEach((outcome: any, index: number) => {
-        const value = outcome.decision.label.toLowerCase();
-        if (trends[value] && index < 3) {
-          trends[value][index] = 100;
+        const selectedValue = outcome.decision.label.toLowerCase();
+
+        if (index < 3) {
+          // Set 100 for the selected value
+          if (trends[selectedValue]) {
+            trends[selectedValue][index] = 100;
+          }
+
+          // Set 50 for top-two values that weren't selected
+          finalTopTwoValues.forEach((topValue: string) => {
+            if (topValue !== selectedValue && trends[topValue]) {
+              trends[topValue][index] = 50;
+            }
+          });
         }
       });
       setValueTrends(trends);
