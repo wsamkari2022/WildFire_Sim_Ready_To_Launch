@@ -581,7 +581,7 @@ const FeedbackPage: React.FC = () => {
           </div>
 
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            The APA (Adaptive Preference Alignment) feature allowed you to compare your chosen options with CVR scenarios and reprioritize your values based on new insights. This helped you understand options from different perspectives and align future choices with your reordered values.
+            The APA (Adaptive Preference Alignment) feature allowed you to compare your chosen options with CVR scenarios and reprioritize your values based on new insights. The goal is to help you understand options from different perspectives and align future choices with your reordered values.
           </p>
 
           <div className="space-y-6">
