@@ -30,9 +30,17 @@ interface FeedbackData {
   cvrPerceivedValue: number;
   cvrOverallImpact: number;
   cvrComments: string;
+  apaPurposeClarity: number;
+  apaEaseOfUse: number;
+  apaControlUnderstanding: number;
+  apaDecisionReflection: boolean | null;
+  apaScenarioAlignment: boolean | null;
   apaComparisonUsefulness: number;
-  apaReorderingEffectiveness: number;
   apaPerspectiveValue: number;
+  apaConfidenceAfterReordering: number;
+  apaPerceivedValue: number;
+  apaTradeoffChallenge: number;
+  apaReflectionDepth: number;
   apaComments: string;
   vizExpertUsefulness: number;
   vizChartClarity: number;
@@ -56,9 +64,17 @@ const FeedbackPage: React.FC = () => {
     cvrPerceivedValue: 4,
     cvrOverallImpact: 4,
     cvrComments: '',
+    apaPurposeClarity: 4,
+    apaEaseOfUse: 4,
+    apaControlUnderstanding: 4,
+    apaDecisionReflection: null,
+    apaScenarioAlignment: null,
     apaComparisonUsefulness: 4,
-    apaReorderingEffectiveness: 4,
     apaPerspectiveValue: 4,
+    apaConfidenceAfterReordering: 4,
+    apaPerceivedValue: 4,
+    apaTradeoffChallenge: 4,
+    apaReflectionDepth: 4,
     apaComments: '',
     vizExpertUsefulness: 4,
     vizChartClarity: 4,
@@ -70,6 +86,7 @@ const FeedbackPage: React.FC = () => {
     notesFreeText: ''
   });
   const [showCvrTooltip, setShowCvrTooltip] = useState(false);
+  const [showApaTooltip, setShowApaTooltip] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [metrics, setMetrics] = useState<SessionDVs | null>(null);
@@ -339,9 +356,17 @@ const FeedbackPage: React.FC = () => {
       cvr_perceived_value: feedback.cvrPerceivedValue,
       cvr_overall_impact: feedback.cvrOverallImpact,
       cvr_comments: feedback.cvrComments,
+      apa_purpose_clarity: feedback.apaPurposeClarity,
+      apa_ease_of_use: feedback.apaEaseOfUse,
+      apa_control_understanding: feedback.apaControlUnderstanding,
+      apa_decision_reflection: feedback.apaDecisionReflection,
+      apa_scenario_alignment: feedback.apaScenarioAlignment,
       apa_comparison_usefulness: feedback.apaComparisonUsefulness,
-      apa_reordering_effectiveness: feedback.apaReorderingEffectiveness,
       apa_perspective_value: feedback.apaPerspectiveValue,
+      apa_confidence_after_reordering: feedback.apaConfidenceAfterReordering,
+      apa_perceived_value: feedback.apaPerceivedValue,
+      apa_tradeoff_challenge: feedback.apaTradeoffChallenge,
+      apa_reflection_depth: feedback.apaReflectionDepth,
       apa_comments: feedback.apaComments,
       viz_expert_usefulness: feedback.vizExpertUsefulness,
       viz_chart_clarity: feedback.vizChartClarity,
@@ -764,96 +789,349 @@ const FeedbackPage: React.FC = () => {
           </p>
 
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                How useful was comparing your simulation choices with CVR scenarios (APA Comparsion Table)?
-              </label>
-              <div className="flex items-center space-x-4">
-                <span className="text-xs text-gray-500 w-4">1</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  value={feedback.apaComparisonUsefulness}
-                  onChange={(e) => handleSliderChange('apaComparisonUsefulness', parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isSubmitted}
-                />
-                <span className="text-xs text-gray-500 w-4">7</span>
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-base font-bold text-green-600">{feedback.apaComparisonUsefulness}</span>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-gray-800 mb-4">Understanding and Usability</h4>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Purpose Clarity: How clear was the purpose of the APA feature in helping you balance Simulation Metrics and Moral Values when making decisions?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaPurposeClarity}
+                      onChange={(e) => handleSliderChange('apaPurposeClarity', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-blue-600">{feedback.apaPurposeClarity}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Very unclear</span>
+                    <span>Very clear</span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
-                <span>Not Useful</span>
-                <span>Very Useful</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Ease of Use: How easy was it to rank or re-order your priorities during the APA process?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaEaseOfUse}
+                      onChange={(e) => handleSliderChange('apaEaseOfUse', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-cyan-600">{feedback.apaEaseOfUse}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Very difficult</span>
+                    <span>Very easy</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Control and Understanding: Did you feel that the APA interface gave you enough control to shape your decisions according to your ranked preferences?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaControlUnderstanding}
+                      onChange={(e) => handleSliderChange('apaControlUnderstanding', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-teal-600">{feedback.apaControlUnderstanding}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>No control</span>
+                    <span>Full control</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                How effective was the value reordering feature?
-              </label>
-              <div className="flex items-center space-x-4">
-                <span className="text-xs text-gray-500 w-4">1</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  value={feedback.apaReorderingEffectiveness}
-                  onChange={(e) => handleSliderChange('apaReorderingEffectiveness', parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isSubmitted}
-                />
-                <span className="text-xs text-gray-500 w-4">7</span>
-                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="text-base font-bold text-emerald-600">{feedback.apaReorderingEffectiveness}</span>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-gray-800 mb-4">Perceived Impact and Alignment</h4>
+
+              <div className="space-y-6">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Decision Reflection: Did the APA process cause you to rethink what mattered most in your decision-making (for example, Safety vs. Efficiency)?
+                  </label>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setFeedback(prev => ({ ...prev, apaDecisionReflection: true }))}
+                      disabled={isSubmitted}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        feedback.apaDecisionReflection === true
+                          ? 'bg-green-600 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      onClick={() => setFeedback(prev => ({ ...prev, apaDecisionReflection: false }))}
+                      disabled={isSubmitted}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        feedback.apaDecisionReflection === false
+                          ? 'bg-green-600 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      No
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
-                <span>Not Effective</span>
-                <span>Very Effective</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Scenario Alignment: Did the APA system help you see more aligned and relevant initial options when you arrived at the next scenarios?
+                  </label>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setFeedback(prev => ({ ...prev, apaScenarioAlignment: true }))}
+                      disabled={isSubmitted}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        feedback.apaScenarioAlignment === true
+                          ? 'bg-green-600 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      onClick={() => setFeedback(prev => ({ ...prev, apaScenarioAlignment: false }))}
+                      disabled={isSubmitted}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        feedback.apaScenarioAlignment === false
+                          ? 'bg-green-600 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border-2 border-gray-300 hover:border-green-400'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    APA Comparison Table Usefulness: How useful was comparing your simulation choices with CVR scenarios (APA Comparison Table)?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaComparisonUsefulness}
+                      onChange={(e) => handleSliderChange('apaComparisonUsefulness', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-green-600">{feedback.apaComparisonUsefulness}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not useful</span>
+                    <span>Very useful</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Perspective Value: How valuable was understanding options from different perspectives (value-based perspectives) through APA?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaPerspectiveValue}
+                      onChange={(e) => handleSliderChange('apaPerspectiveValue', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-emerald-600">{feedback.apaPerspectiveValue}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not valuable</span>
+                    <span>Extremely valuable</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Confidence After Reordering: How confident were you in your final decisions after adjusting your moral or simulation value rankings?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaConfidenceAfterReordering}
+                      onChange={(e) => handleSliderChange('apaConfidenceAfterReordering', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-teal-600">{feedback.apaConfidenceAfterReordering}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not confident</span>
+                    <span>Very confident</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Perceived Value: How valuable was the APA feature overall in helping you make decisions that reflected your values and priorities?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaPerceivedValue}
+                      onChange={(e) => handleSliderChange('apaPerceivedValue', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-lime-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-lime-600">{feedback.apaPerceivedValue}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not valuable</span>
+                    <span>Extremely valuable</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-               How useful was comparing your simulation choices with CVR scenarios (APA Comparsion Table)?
-              </label>
-              <div className="flex items-center space-x-4">
-                <span className="text-xs text-gray-500 w-4">1</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="7"
-                  value={feedback.apaPerspectiveValue}
-                  onChange={(e) => handleSliderChange('apaPerspectiveValue', parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  disabled={isSubmitted}
-                />
-                <span className="text-xs text-gray-500 w-4">7</span>
-                <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
-                  <span className="text-base font-bold text-teal-600">{feedback.apaPerspectiveValue}</span>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-gray-800 mb-4">Cognitive Effort and Challenge</h4>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Trade-off Challenge: How challenging was it to decide which moral values or simulation metrics should take priority when ranking them?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaTradeoffChallenge}
+                      onChange={(e) => handleSliderChange('apaTradeoffChallenge', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-amber-600">{feedback.apaTradeoffChallenge}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not challenging</span>
+                    <span>Very challenging</span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
-                <span>Not Valuable</span>
-                <span>Very Valuable</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Reflection Depth: To what extent did APA make you reflect on the trade-offs between different moral or operational values?
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-xs text-gray-500 w-4">1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="7"
+                      value={feedback.apaReflectionDepth}
+                      onChange={(e) => handleSliderChange('apaReflectionDepth', parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      disabled={isSubmitted}
+                    />
+                    <span className="text-xs text-gray-500 w-4">7</span>
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <span className="text-base font-bold text-orange-600">{feedback.apaReflectionDepth}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                    <span>Not at all</span>
+                    <span>A great deal</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
-                Comments about APA Experience (Optional)
+                Tell us about your APA experience (optional)
+                <button
+                  onMouseEnter={() => setShowApaTooltip(true)}
+                  onMouseLeave={() => setShowApaTooltip(false)}
+                  onClick={() => setShowApaTooltip(!showApaTooltip)}
+                  className="ml-2 text-green-500 hover:text-green-700 relative"
+                >
+                  <Info className="h-4 w-4" />
+                  {showApaTooltip && (
+                    <div className="absolute left-0 top-6 z-10 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl">
+                      <div className="space-y-2">
+                        <p>Which part of APA helped you understand your priorities better?</p>
+                        <p>Did ranking your preferences change how you approached the next scenario?</p>
+                        <p>Did APA make the options feel more consistent with your values?</p>
+                        <p>How did APA influence your sense of fairness or control?</p>
+                        <p>What could make the APA interface more intuitive or engaging?</p>
+                      </div>
+                    </div>
+                  )}
+                </button>
               </label>
               <textarea
                 value={feedback.apaComments}
                 onChange={(e) => setFeedback(prev => ({ ...prev, apaComments: e.target.value }))}
-                rows={3}
+                rows={4}
                 disabled={isSubmitted}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="Share your thoughts about the Adaptive Preference Analysis feature..."
+                placeholder="What did you find most useful or challenging about APA? Did ranking your preferences change your next decisions? Where did APA feel most valuable? How could APA be improved?"
               />
             </div>
           </div>
