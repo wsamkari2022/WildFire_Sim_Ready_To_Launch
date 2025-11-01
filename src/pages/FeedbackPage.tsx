@@ -469,7 +469,7 @@ const FeedbackPage: React.FC = () => {
           </div>
 
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            The CVR (Cognitive Value Recontextulization) mechanism presented you with alternative scenarios to help understand your chosen options from different contexts and perspectives. Please rate how this feature impacted your decision-making process.
+            The CVR (Cognitive Value Recontextualization) mechanism presented you with alternative scenarios to help understand your chosen options from different contexts and perspectives. Please rate how this feature impacted your decision-making process.
           </p>
 
           <div className="space-y-6">
