@@ -17,27 +17,17 @@ const CollapsibleHelpMessage: React.FC<CollapsibleHelpMessageProps> = ({
   defaultExpanded = false
 }) => {
   const storageKey = `help-message-${id}-hidden`;
-  const bubbleStorageKey = `help-message-bubble-dismissed`;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isPermanentlyHidden, setIsPermanentlyHidden] = useState(false);
-  const [showBubble, setShowBubble] = useState(false);
 
   useEffect(() => {
     const hidden = localStorage.getItem(storageKey) === 'true';
     setIsPermanentlyHidden(hidden);
-
-    const bubbleDismissed = localStorage.getItem(bubbleStorageKey) === 'true';
-    setShowBubble(!bubbleDismissed && !hidden);
-  }, [storageKey, bubbleStorageKey]);
+  }, [storageKey]);
 
   const handlePermanentHide = () => {
     localStorage.setItem(storageKey, 'true');
     setIsPermanentlyHidden(true);
-  };
-
-  const handleDismissBubble = () => {
-    localStorage.setItem(bubbleStorageKey, 'true');
-    setShowBubble(false);
   };
 
   if (isPermanentlyHidden) {
@@ -46,22 +36,6 @@ const CollapsibleHelpMessage: React.FC<CollapsibleHelpMessageProps> = ({
 
   return (
     <div className="relative mb-4">
-      {showBubble && (
-        <div className="absolute -top-12 right-8 z-20 animate-bounce">
-          <div className="bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap font-medium">
-             
- 
-            <button
-              onClick={handleDismissBubble}
-              className="ml-2 hover:text-gray-200 transition-colors"
-            >
-              <X size={12} />
-            </button>
-            <div className="absolute top-full right-4 transform w-0 h-0 border-t-8 border-amber-400 border-x-8 border-x-transparent"></div>
-          </div>
-        </div>
-      )}
-
       <div className="border-2 bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400 rounded-xl shadow-md overflow-hidden transition-all duration-300">
         <div className="flex items-center justify-between p-4">
           <button
