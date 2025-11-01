@@ -1878,12 +1878,17 @@ const FeedbackPage: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                <div className="p-6 space-y-6">
+                <div className="p-8 space-y-8">
                   {/* Value Distribution Section */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Scale className="h-6 w-6 text-blue-600" />
-                      <h3 className="text-xl font-bold text-gray-900">Value Distribution Analysis</h3>
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Scale className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Value Distribution Analysis</h3>
+                        <p className="text-sm text-gray-600 mt-1">How your values were expressed across different assessment types</p>
+                      </div>
                     </div>
                     <div className="h-[400px]">
                       <Bar
@@ -1896,58 +1901,207 @@ const FeedbackPage: React.FC = () => {
                               beginAtZero: true,
                               title: {
                                 display: true,
-                                text: 'Frequency'
-                              }
+                                text: 'Frequency',
+                                font: { size: 13, weight: 'bold' }
+                              },
+                              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            },
+                            x: {
+                              grid: { display: false }
                             }
                           },
                           plugins: {
                             legend: {
-                              position: 'bottom' as const
+                              position: 'bottom' as const,
+                              labels: {
+                                padding: 20,
+                                font: { size: 13 },
+                                usePointStyle: true
+                              }
                             },
                             title: {
-                              display: true,
-                              text: 'Value Distribution Across Assessment Types'
+                              display: false
                             }
                           }
                         }}
                       />
                     </div>
-                  </div>
+                  </section>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Value Stability Section */}
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-2 mb-4">
+                  {/* Value Stability Section */}
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-purple-100 rounded-lg">
                         <Brain className="h-6 w-6 text-purple-600" />
-                        <h3 className="text-xl font-bold text-gray-900">Value Stability Analysis</h3>
                       </div>
-
-                      <div className="mb-6">
-                        <div className="text-center mb-6">
-                          <div className={`text-4xl font-bold mb-2 ${
-                            overallStabilityScore >= 75 ? 'text-green-600' :
-                            overallStabilityScore >= 50 ? 'text-orange-600' :
-                            'text-red-600'
-                          }`}>
-                            {overallStabilityScore.toFixed(1)}%
-                          </div>
-                          <p className="text-gray-600">Overall Value Stability Score</p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            (Weighted: 40% Explicit, 60% Implicit Values)
-                          </p>
-                        </div>
-
-                        <ValueStabilityTable matches={valueMatches} />
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Value Stability Analysis</h3>
+                        <p className="text-sm text-gray-600 mt-1">How consistently your stated values aligned with your decisions</p>
                       </div>
                     </div>
 
-                    {/* Value Consistency Trend */}
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <TrendingUp className="h-6 w-6 text-green-600" />
-                        <h3 className="text-xl font-bold text-gray-900">Value Consistency Trend</h3>
+                    <div className="text-center mb-8">
+                      <div className="inline-flex flex-col items-center p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
+                        <div className={`text-5xl font-bold mb-2 ${
+                          overallStabilityScore >= 75 ? 'text-green-600' :
+                          overallStabilityScore >= 50 ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {overallStabilityScore.toFixed(1)}%
+                        </div>
+                        <p className="text-lg font-semibold text-gray-800">Overall Value Stability Score</p>
+                        <p className="text-sm text-gray-600 mt-2">
+                          (Weighted: 40% Explicit, 60% Implicit Values)
+                        </p>
                       </div>
-                      <div className="h-[400px]">
+                    </div>
+
+                    <ValueStabilityTable matches={valueMatches} />
+                  </section>
+
+                  {/* Decision Alignment Section */}
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Target className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Decision Alignment Overview</h3>
+                        <p className="text-sm text-gray-600 mt-1">Whether your final decisions matched your stated values</p>
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
+                      const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
+                      const allEvents = JSON.parse(localStorage.getItem('sessionEventLogs') || '[]');
+
+                      const alignedCount = checkingAlignmentList.filter((status: string) => status === 'Aligned').length;
+                      const totalScenarios = checkingAlignmentList.length;
+                      const alignmentPercentage = totalScenarios > 0 ? (alignedCount / totalScenarios) * 100 : 0;
+
+                      return (
+                        <>
+                          <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border border-blue-200">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-600 mb-1">Overall Alignment Rate</p>
+                                <p className="text-3xl font-bold text-gray-900">{alignedCount} / {totalScenarios}</p>
+                                <p className="text-sm text-gray-600 mt-1">scenarios aligned with your values</p>
+                              </div>
+                              <div className="text-right">
+                                <div className={`text-4xl font-bold ${
+                                  alignmentPercentage >= 66 ? 'text-green-600' :
+                                  alignmentPercentage >= 33 ? 'text-orange-600' :
+                                  'text-red-600'
+                                }`}>
+                                  {alignmentPercentage.toFixed(0)}%
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            {valueMatches.map((match, index) => {
+                              const decisionLabel = scenariosFinalDecisionLabels[index] || match.selectedValue;
+                              const alignmentStatus = checkingAlignmentList[index] || 'Unknown';
+                              const isAligned = alignmentStatus === 'Aligned';
+
+                              const scenarioEvents = allEvents.filter((e: any) =>
+                                e.scenarioId === match.scenarioId ||
+                                (e.data && e.data.scenarioId === match.scenarioId)
+                              );
+
+                              const confirmationEvent = scenarioEvents.find((e: any) =>
+                                e.event === 'option_confirmed' ||
+                                (e.data && e.data.event === 'option_confirmed')
+                              );
+
+                              const flags = confirmationEvent?.data?.flagsAtConfirmation || confirmationEvent?.flagsAtConfirmation;
+                              const hadCvrYes = flags?.cvrYesClicked ?? false;
+                              const hadCvrNo = flags?.cvrNoClicked ?? false;
+                              const hadApaReorder = flags?.hasReorderedValues ?? false;
+
+                              return (
+                                <div
+                                  key={match.scenarioId}
+                                  className={`p-5 rounded-xl border-2 transition-all ${
+                                    isAligned
+                                      ? 'bg-green-50 border-green-300'
+                                      : 'bg-red-50 border-red-300'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <span className="text-base font-bold text-gray-900">Scenario {match.scenarioId}</span>
+                                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full font-bold text-xs ${
+                                          isAligned
+                                            ? 'bg-green-100 text-green-800 border border-green-300'
+                                            : 'bg-red-100 text-red-800 border border-red-300'
+                                        }`}>
+                                          {isAligned ? (
+                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                          ) : (
+                                            <XCircle className="h-3.5 w-3.5" />
+                                          )}
+                                          {alignmentStatus}
+                                        </div>
+                                      </div>
+                                      <div className="bg-white rounded-lg px-4 py-2.5 border border-gray-200">
+                                        <p className="text-xs text-gray-600 mb-0.5">Final Decision</p>
+                                        <p className="text-base font-bold text-gray-900">
+                                          {decisionLabel.charAt(0).toUpperCase() + decisionLabel.slice(1)}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {(hadCvrYes || hadCvrNo || hadApaReorder) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200">
+                                      <p className="text-xs font-semibold text-gray-600 mb-2">Interaction Flags</p>
+                                      <div className="flex flex-wrap gap-2">
+                                        {hadCvrYes && (
+                                          <span className="px-2.5 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">
+                                            CVR: Would Change Decision
+                                          </span>
+                                        )}
+                                        {hadCvrNo && (
+                                          <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full border border-blue-300">
+                                            CVR: Confirmed Decision
+                                          </span>
+                                        )}
+                                        {hadApaReorder && (
+                                          <span className="px-2.5 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full border border-purple-300">
+                                            Reordered Preferences
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </section>
+
+                  {/* Value Consistency Trend */}
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Value Consistency Trend</h3>
+                        <p className="text-sm text-gray-600 mt-1">How your value consistency evolved throughout the simulation</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-6">
+                      <div className="h-[450px]">
                         <Line
                           data={prepareConsistencyTrendData()}
                           options={{
@@ -1959,46 +2113,132 @@ const FeedbackPage: React.FC = () => {
                                 max: 100,
                                 title: {
                                   display: true,
-                                  text: 'Consistency Score (%)'
+                                  text: 'Consistency Score (%)',
+                                  font: { size: 14, weight: 'bold' }
+                                },
+                                grid: {
+                                  color: 'rgba(0, 0, 0, 0.05)',
+                                  drawBorder: false
+                                },
+                                ticks: {
+                                  font: { size: 12 },
+                                  callback: function(value) {
+                                    return value + '%';
+                                  }
                                 }
+                              },
+                              x: {
+                                grid: {
+                                  display: false
+                                },
+                                ticks: {
+                                  font: { size: 12, weight: 'bold' }
+                                }
+                              }
+                            },
+                            elements: {
+                              line: {
+                                borderWidth: 3
+                              },
+                              point: {
+                                radius: 6,
+                                hoverRadius: 8,
+                                borderWidth: 2,
+                                backgroundColor: '#ffffff'
                               }
                             },
                             plugins: {
                               legend: {
-                                position: 'bottom' as const
+                                position: 'top' as const,
+                                align: 'center' as const,
+                                labels: {
+                                  padding: 20,
+                                  usePointStyle: true,
+                                  font: {
+                                    size: 13,
+                                    weight: 'bold'
+                                  },
+                                  boxWidth: 12,
+                                  boxHeight: 12
+                                }
+                              },
+                              tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                titleColor: '#1f2937',
+                                bodyColor: '#4b5563',
+                                borderColor: '#d1d5db',
+                                borderWidth: 2,
+                                padding: 16,
+                                bodyFont: {
+                                  size: 13
+                                },
+                                titleFont: {
+                                  size: 15,
+                                  weight: 'bold'
+                                },
+                                displayColors: true,
+                                boxWidth: 12,
+                                boxHeight: 12,
+                                boxPadding: 6,
+                                callbacks: {
+                                  label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(0) + '%';
+                                  }
+                                }
                               }
+                            },
+                            interaction: {
+                              mode: 'index',
+                              intersect: false
                             }
                           }}
                         />
                       </div>
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">High Consistency (75-100%)</h4>
-                          <p className="text-xs text-gray-600">
-                            Values consistently align with explicit and implicit preferences
-                          </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border-2 border-green-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <h4 className="text-sm font-bold text-green-800">High Consistency</h4>
                         </div>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Medium Consistency (50-74%)</h4>
-                          <p className="text-xs text-gray-600">
-                            Values show moderate alignment with stated preferences
-                          </p>
+                        <p className="text-xs text-gray-700 leading-relaxed">
+                          Values consistently align with both explicit and implicit preferences (75-100%)
+                        </p>
+                      </div>
+                      <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border-2 border-orange-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle className="h-4 w-4 text-orange-600" />
+                          <h4 className="text-sm font-bold text-orange-800">Medium Consistency</h4>
                         </div>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">Low Consistency (0-49%)</h4>
-                          <p className="text-xs text-gray-600">
-                            Values demonstrate significant deviation from preferences
-                          </p>
+                        <p className="text-xs text-gray-700 leading-relaxed">
+                          Values show moderate alignment with stated preferences (50-74%)
+                        </p>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-50 to-rose-50 p-4 rounded-xl border-2 border-red-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <XCircle className="h-4 w-4 text-red-600" />
+                          <h4 className="text-sm font-bold text-red-800">Low Consistency</h4>
                         </div>
+                        <p className="text-xs text-gray-700 leading-relaxed">
+                          Values demonstrate significant deviation from preferences (0-49%)
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  </section>
 
                   {/* Final Metrics Section */}
-                  <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Flame className="h-6 w-6 text-orange-600" />
-                      <h3 className="text-xl font-bold text-gray-900">Final Simulation Metrics</h3>
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <Flame className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">Final Simulation Metrics</h3>
+                        <p className="text-sm text-gray-600 mt-1">The cumulative outcomes of your decisions</p>
+                      </div>
                     </div>
                     {finalMetrics && (
                       <div className="space-y-4">
@@ -2091,7 +2331,7 @@ const FeedbackPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </section>
                 </div>
               )}
             </div>
