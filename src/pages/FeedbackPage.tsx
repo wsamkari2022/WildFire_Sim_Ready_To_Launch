@@ -422,7 +422,7 @@ const FeedbackPage: React.FC = () => {
 
       const implicitCounts: ValueCount = {};
       implicitValues.forEach((value: any) => {
-        const normalizedValue = value.preferredOption?.label?.toLowerCase();
+        const normalizedValue = value.name?.toLowerCase();
         if (normalizedValue) {
           implicitCounts[normalizedValue] = (implicitCounts[normalizedValue] || 0) + 1;
         }
