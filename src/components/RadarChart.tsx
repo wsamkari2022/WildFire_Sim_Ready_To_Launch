@@ -67,6 +67,9 @@ const RadarChart: React.FC<RadarChartProps> = ({
 }) => {
   const [selectedMetric, setSelectedMetric] = useState<string>('Fire Containment');
   const [comparisonView, setComparisonView] = useState<ComparisonView>('radar');
+  const [hasClickedBar, setHasClickedBar] = useState(() => localStorage.getItem('hasClickedBar') === 'true');
+  const [hasClickedDifferences, setHasClickedDifferences] = useState(() => localStorage.getItem('hasClickedDifferences') === 'true');
+  const [hasClickedIdealOutcome, setHasClickedIdealOutcome] = useState(() => localStorage.getItem('hasClickedIdealOutcome') === 'true');
 
   if (!showRadarChart) return null;
 
@@ -203,6 +206,14 @@ const RadarChart: React.FC<RadarChartProps> = ({
 
   const handleViewChange = (view: ComparisonView) => {
     setComparisonView(view);
+    if (view === 'bar' && !hasClickedBar) {
+      setHasClickedBar(true);
+      localStorage.setItem('hasClickedBar', 'true');
+    }
+    if (view === 'differences' && !hasClickedDifferences) {
+      setHasClickedDifferences(true);
+      localStorage.setItem('hasClickedDifferences', 'true');
+    }
   };
 
   const handleMetricClick = (metric: string) => {
@@ -211,6 +222,10 @@ const RadarChart: React.FC<RadarChartProps> = ({
 
   const handleToggleClick = (optionId: string) => {
     toggleOption(optionId);
+    if (optionId === 'ideal-outcome' && !hasClickedIdealOutcome) {
+      setHasClickedIdealOutcome(true);
+      localStorage.setItem('hasClickedIdealOutcome', 'true');
+    }
   };
 
   return (
@@ -238,12 +253,14 @@ const RadarChart: React.FC<RadarChartProps> = ({
               className={`px-3 py-1.5 rounded-md text-sm transition-all duration-200 relative ${
                 comparisonView === 'bar'
                   ? 'bg-green-500 text-white shadow-lg scale-105'
+                  : hasClickedBar
+                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 animate-pulse'
               }`}
             >
               <BarChart size={16} className="inline mr-1" />
               Bar
-              {comparisonView !== 'bar' && (
+              {!hasClickedBar && comparisonView !== 'bar' && (
                 <>
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
@@ -255,12 +272,14 @@ const RadarChart: React.FC<RadarChartProps> = ({
               className={`px-3 py-1.5 rounded-md text-sm transition-all duration-200 relative ${
                 comparisonView === 'differences'
                   ? 'bg-purple-500 text-white shadow-lg scale-105'
+                  : hasClickedDifferences
+                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 animate-pulse'
               }`}
             >
               <GitCompare size={16} className="inline mr-1" />
               Differences
-              {comparisonView !== 'differences' && (
+              {!hasClickedDifferences && comparisonView !== 'differences' && (
                 <>
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
@@ -366,6 +385,8 @@ const RadarChart: React.FC<RadarChartProps> = ({
                   className={`w-full p-3 rounded-lg flex items-center justify-between transition-all duration-200 relative ${
                     toggledOptions['ideal-outcome']
                       ? 'bg-purple-200 text-purple-900 shadow-lg scale-105'
+                      : hasClickedIdealOutcome
+                      ? 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 animate-pulse'
                   }`}
                 >
@@ -375,7 +396,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
                   </div>
                   <div className="flex items-center gap-2">
                     {toggledOptions['ideal-outcome'] ? <Eye size={16} /> : <EyeOff size={16} />}
-                    {!toggledOptions['ideal-outcome'] && (
+                    {!hasClickedIdealOutcome && !toggledOptions['ideal-outcome'] && (
                       <>
                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping"></span>
                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full"></span>
