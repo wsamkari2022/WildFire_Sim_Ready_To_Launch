@@ -725,11 +725,11 @@ const FeedbackPage: React.FC = () => {
                   {showCvrTooltip && (
                     <div className="absolute left-0 top-6 z-10 w-80 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl">
                       <div className="space-y-2">
-                        <p>• What aspects of CVR (if any) made you reconsider your choice?</p>
-                        <p>• Which question or perspective most influenced your thinking—and how?</p>
-                        <p>• Did CVR make you more or less confident in your decision? Why?</p>
-                        <p>• Where did you find the most value in the CVR prompts?</p>
-                        <p>• How tedious (if at all) did the CVR questions feel, and what would improve them?</p>
+                        <p>What aspects of CVR (if any) made you reconsider your choice?</p>
+                        <p>Which question or perspective most influenced your thinking—and how?</p>
+                        <p>Did CVR make you more or less confident in your decision? Why?</p>
+                        <p>Where did you find the most value in the CVR prompts?</p>
+                        <p>How tedious (if at all) did the CVR questions feel, and what would improve them?</p>
                       </div>
                     </div>
                   )}
