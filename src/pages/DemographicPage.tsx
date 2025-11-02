@@ -155,15 +155,15 @@ const DemographicPage: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Experience with AI Systems
+                      Dealing with AI Systems
                     </label>
                     <div className="flex gap-2">
-                      {['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'].map((level) => (
+                      {['Never', 'Rarely', 'Often', 'Very Often', 'Most of the Time'].map((level) => (
                         <button
                           key={level}
                           type="button"
                           onClick={() => setFormData(prev => ({ ...prev, aiExperience: level }))}
-                          className={`flex-1 py-2 px-2 text-xs font-medium rounded-lg transition-all duration-200 ${
+                          className={`flex-1 py-2 px-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
                             formData.aiExperience === level
                               ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg scale-105'
                               : 'bg-white/90 text-gray-700 border border-gray-200 hover:border-orange-300 hover:shadow-md'
