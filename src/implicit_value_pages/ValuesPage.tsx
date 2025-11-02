@@ -179,6 +179,10 @@ const ValuesPage: React.FC = () => {
             };
             localStorage.setItem('userValues', JSON.stringify(userValues));
 
+            // Save value frequency data for use in Value Consistency Trend visualization
+            localStorage.setItem('ExplicitValueFrequencies', JSON.stringify(valueFrequencies));
+            localStorage.setItem('ImplicitValueFrequencies', JSON.stringify(implicitValueFrequencies));
+
             // Only pass the first two top values to the simulation
             const topTwoValues = matchedStableValues.slice(0, 2);
             localStorage.setItem('finalValues', JSON.stringify(topTwoValues));

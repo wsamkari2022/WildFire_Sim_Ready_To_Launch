@@ -171,6 +171,8 @@ const FeedbackPage: React.FC = () => {
   const [overallStabilityScore, setOverallStabilityScore] = useState<number>(0);
   const [analysisError, setAnalysisError] = useState(false);
   const [valueTrends, setValueTrends] = useState<ValueTrend>(initializeValueTrends());
+  const [explicitValueFrequencies, setExplicitValueFrequencies] = useState<Array<{value: string, count: number, percentage: number}>>([]);
+  const [implicitValueFrequencies, setImplicitValueFrequencies] = useState<Array<{value: string, count: number, percentage: number}>>([]);
 
   useEffect(() => {
     calculateMetrics();
@@ -413,6 +415,12 @@ const FeedbackPage: React.FC = () => {
         return;
       }
 
+      // Load value frequency data
+      const explicitFreqs = JSON.parse(localStorage.getItem('ExplicitValueFrequencies') || '[]');
+      const implicitFreqs = JSON.parse(localStorage.getItem('ImplicitValueFrequencies') || '[]');
+      setExplicitValueFrequencies(explicitFreqs);
+      setImplicitValueFrequencies(implicitFreqs);
+
       const explicitCounts: ValueCount = {};
       explicitValues.forEach((value: any) => {
         const normalizedValue = value.value_selected.toLowerCase();
@@ -538,8 +546,17 @@ const FeedbackPage: React.FC = () => {
           { line: 'rgb(139, 92, 246)', fill: 'rgba(139, 92, 246, 0.1)' }
         ];
 
-        const explicitScore = explicitValueCounts[value] ? 100 : 0;
-        const implicitScore = implicitValueCounts[value] ? 100 : 0;
+        // Find the frequency percentage for this value in explicit choices
+        const explicitFreq = explicitValueFrequencies.find(
+          freq => freq.value.toLowerCase() === value.toLowerCase()
+        );
+        const explicitScore = explicitFreq ? explicitFreq.percentage : 0;
+
+        // Find the frequency percentage for this value in implicit choices
+        const implicitFreq = implicitValueFrequencies.find(
+          freq => freq.value.toLowerCase() === value.toLowerCase()
+        );
+        const implicitScore = implicitFreq ? implicitFreq.percentage : 0;
 
         return {
           label: value.charAt(0).toUpperCase() + value.slice(1),

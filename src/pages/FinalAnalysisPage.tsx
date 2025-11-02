@@ -76,6 +76,8 @@ const FinalAnalysisPage: React.FC = () => {
   const [overallStabilityScore, setOverallStabilityScore] = useState<number>(0);
   const [showError, setShowError] = useState(false);
   const [valueTrends, setValueTrends] = useState<ValueTrend>(initializeValueTrends());
+  const [explicitValueFrequencies, setExplicitValueFrequencies] = useState<Array<{value: string, count: number, percentage: number}>>([]);
+  const [implicitValueFrequencies, setImplicitValueFrequencies] = useState<Array<{value: string, count: number, percentage: number}>>([]);
 
   useEffect(() => {
     try {
@@ -89,6 +91,12 @@ const FinalAnalysisPage: React.FC = () => {
         setShowError(true);
         return;
       }
+
+      // Load value frequency data
+      const explicitFreqs = JSON.parse(localStorage.getItem('ExplicitValueFrequencies') || '[]');
+      const implicitFreqs = JSON.parse(localStorage.getItem('ImplicitValueFrequencies') || '[]');
+      setExplicitValueFrequencies(explicitFreqs);
+      setImplicitValueFrequencies(implicitFreqs);
 
       // Process explicit values
       const explicitCounts: ValueCount = {};
@@ -216,27 +224,23 @@ const FinalAnalysisPage: React.FC = () => {
       { line: 'rgb(139, 92, 246)', fill: 'rgba(139, 92, 246, 0.1)' }  // purple
     ];
 
-    // Calculate totals for percentage calculations
-    const totalExplicitChoices = Object.values(explicitValueCounts).reduce((sum, count) => sum + count, 0);
-    const totalImplicitChoices = Object.values(implicitValueCounts).reduce((sum, count) => sum + count, 0);
-
     // Only include values that were actually selected in scenarios
     const selectedValues = Object.keys(valueTrends);
 
     return {
       labels: ['Explicit Choices', 'Implicit Choices', 'Scenario 1', 'Scenario 2', 'Scenario 3'],
       datasets: selectedValues.map((value, index) => {
-        // Calculate explicit score as percentage frequency (not binary)
-        const explicitCount = explicitValueCounts[value] || 0;
-        const explicitScore = totalExplicitChoices > 0
-          ? (explicitCount / totalExplicitChoices) * 100
-          : 0;
+        // Find the frequency percentage for this value in explicit choices
+        const explicitFreq = explicitValueFrequencies.find(
+          freq => freq.value.toLowerCase() === value.toLowerCase()
+        );
+        const explicitScore = explicitFreq ? explicitFreq.percentage : 0;
 
-        // Calculate implicit score as percentage frequency (not binary)
-        const implicitCount = implicitValueCounts[value] || 0;
-        const implicitScore = totalImplicitChoices > 0
-          ? (implicitCount / totalImplicitChoices) * 100
-          : 0;
+        // Find the frequency percentage for this value in implicit choices
+        const implicitFreq = implicitValueFrequencies.find(
+          freq => freq.value.toLowerCase() === value.toLowerCase()
+        );
+        const implicitScore = implicitFreq ? implicitFreq.percentage : 0;
 
         return {
           label: value.charAt(0).toUpperCase() + value.slice(1),
