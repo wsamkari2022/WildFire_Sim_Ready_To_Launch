@@ -431,30 +431,12 @@ const FeedbackPage: React.FC = () => {
 
       const trends = initializeValueTrends();
 
-      // Initialize all values with zeros for 5 data points: [Explicit, Implicit, Scenario 1, Scenario 2, Scenario 3]
+      // Initialize all values with zeros for all 3 scenarios
       Object.keys(trends).forEach(value => {
-        trends[value] = [0, 0, 0, 0, 0];
+        trends[value] = [0, 0, 0];
       });
 
-      // Calculate totals for percentage calculation
-      const totalExplicit = explicitValues.length;
-      const totalImplicit = implicitValues.length;
-
-      // Set explicit choices percentages (index 0)
-      Object.keys(explicitCounts).forEach(value => {
-        if (trends[value]) {
-          trends[value][0] = (explicitCounts[value] / totalExplicit) * 100;
-        }
-      });
-
-      // Set implicit choices percentages (index 1)
-      Object.keys(implicitCounts).forEach(value => {
-        if (trends[value]) {
-          trends[value][1] = (implicitCounts[value] / totalImplicit) * 100;
-        }
-      });
-
-      // Set values based on selection and top-two status at each scenario (indices 2, 3, 4)
+      // Set values based on selection and top-two status at each scenario
       simulationOutcomes.forEach((outcome: any, index: number) => {
         const selectedValue = outcome.decision.label.toLowerCase();
         const topTwoAtDecision = outcome.topTwoValuesAtDecision || [];
@@ -462,14 +444,14 @@ const FeedbackPage: React.FC = () => {
         if (index < 3) {
           // Set 100 for the selected value
           if (trends[selectedValue]) {
-            trends[selectedValue][index + 2] = 100;
+            trends[selectedValue][index] = 100;
           }
 
           // Set 50 for top-two values that weren't selected at that moment
           topTwoAtDecision.forEach((topValue: string) => {
             const normalizedTopValue = topValue.toLowerCase();
             if (normalizedTopValue !== selectedValue && trends[normalizedTopValue]) {
-              trends[normalizedTopValue][index + 2] = 50;
+              trends[normalizedTopValue][index] = 50;
             }
           });
         }
