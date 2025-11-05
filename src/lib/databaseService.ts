@@ -117,8 +117,8 @@ export interface SessionFeedback {
   viz_clarity?: number;
   viz_helpfulness?: boolean | null;
   viz_usefulness?: number;
-  viz_tradeoff_value?: number;
-  viz_tradeoff_helpfulness?: number;
+  viz_tradeoff_evaluation?: number;
+  viz_tradeoff_justification?: number;
   viz_expert_usefulness?: number;
   viz_expert_confidence_impact?: boolean | null;
   viz_comments?: string;

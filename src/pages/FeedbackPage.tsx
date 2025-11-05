@@ -77,8 +77,8 @@ interface FeedbackData {
   vizClarity: number;
   vizHelpfulness: boolean | null;
   vizUsefulness: number;
-  vizTradeoffValue: number;
-  vizTradeoffHelpfulness: number;
+  vizTradeoffEvaluation: number;
+  vizTradeoffJustification: number;
   vizExpertUsefulness: number;
   vizExpertConfidenceImpact: boolean | null;
   vizComments: string;
@@ -145,8 +145,8 @@ const FeedbackPage: React.FC = () => {
     vizClarity: 4,
     vizHelpfulness: null,
     vizUsefulness: 4,
-    vizTradeoffValue: 4,
-    vizTradeoffHelpfulness: 4,
+    vizTradeoffEvaluation: 4,
+    vizTradeoffJustification: 4,
     vizExpertUsefulness: 4,
     vizExpertConfidenceImpact: null,
     vizComments: '',
@@ -628,8 +628,8 @@ const FeedbackPage: React.FC = () => {
       viz_clarity: feedback.vizClarity,
       viz_helpfulness: feedback.vizHelpfulness,
       viz_usefulness: feedback.vizUsefulness,
-      viz_tradeoff_Evaluation: feedback.vizTradeoffEvaluation,
-      viz_tradeoff_Justifcation: feedback.vizTradeoffJustifcation,
+      viz_tradeoff_evaluation: feedback.vizTradeoffEvaluation,
+      viz_tradeoff_justification: feedback.vizTradeoffJustification,
       viz_expert_usefulness: feedback.vizExpertUsefulness,
       viz_expert_confidence_impact: feedback.vizExpertConfidenceImpact,
       viz_comments: feedback.vizComments,
@@ -846,33 +846,31 @@ const FeedbackPage: React.FC = () => {
 
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Purpose Clarity: How clear was the purpose of the CVR section in helping you reconsider your                   decisions and reinterpret your values when faced with new or changing moral contexts?
-             </label>
+                Purpose Clarity: How clear was the purpose of the CVR section in helping you reconsider your decisions and reinterpret your values when faced with new or changing moral contexts?
+              </label>
               <div className="flex items-center space-x-4">
-                      <span className="text-xs text-gray-500 w-4">1</span>
-               <input
+                <span className="text-xs text-gray-500 w-4">1</span>
+                <input
                   type="range"
-                   min="1"
-                   max="7"
-                   value={feedback.cvrPurposeClarity}
-                   onChange={(e) =>
-                  handleSliderChange('cvrPurposeClarity', parseInt(e.target.value))
-                    }
-                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                    disabled={isSubmitted}
-                     />
-    <span className="text-xs text-gray-500 w-4">7</span>
-    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-      <span className="text-base font-bold text-indigo-600">
-        {feedback.cvrPurposeClarity}
-      </span>
-    </div>
-  </div>
-  <div className="flex justify-between mt-2 px-1">
-    <span className="text-xs text-gray-400 italic">Very Unclear</span>
-    <span className="text-xs text-gray-400 italic">Very Clear</span>
-  </div>
-</div>
+                  min="1"
+                  max="7"
+                  value={feedback.cvrPurposeClarity}
+                  onChange={(e) => handleSliderChange('cvrPurposeClarity', parseInt(e.target.value))}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                  disabled={isSubmitted}
+                />
+                <span className="text-xs text-gray-500 w-4">7</span>
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span className="text-base font-bold text-indigo-600">
+                    {feedback.cvrPurposeClarity}
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
+                <span>Very Unclear</span>
+                <span>Very Clear</span>
+              </div>
+            </div>
 
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1578,14 +1576,14 @@ const FeedbackPage: React.FC = () => {
                       type="range"
                       min="1"
                       max="7"
-                      value={feedback.vizTradeoffJustifcation}
-                      onChange={(e) => handleSliderChange('vizTradeoffHelpfulness', parseInt(e.target.value))}
+                      value={feedback.vizTradeoffJustification}
+                      onChange={(e) => handleSliderChange('vizTradeoffJustification', parseInt(e.target.value))}
                       className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                       disabled={isSubmitted}
                     />
                     <span className="text-xs text-gray-500 w-4">7</span>
                     <div className="w-10 h-10 bg-lime-100 rounded-full flex items-center justify-center">
-                      <span className="text-base font-bold text-lime-600">{feedback.vizTradeoffJustifcation}</span>
+                      <span className="text-base font-bold text-lime-600">{feedback.vizTradeoffJustification}</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-400 mt-1 px-8">
