@@ -1,3 +1,50 @@
+/**
+ * DEMOGRAPHIC PAGE - STUDY ENTRY POINT
+ *
+ * Purpose:
+ * - First page in the study flow
+ * - Displays informed consent document for participants
+ * - Collects demographic information (age, gender, AI experience, moral reasoning experience)
+ * - Creates initial user session in database
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation to next page
+ * - lucide-react: UI icons
+ * - DatabaseService: Database operations
+ *
+ * Direct Database Calls:
+ * 1. DatabaseService.createUserSession()
+ *    - Creates new record in 'user_sessions' table
+ *    - Stores: session_id, demographics, age, gender, ai_experience, moral_reasoning_experience
+ *    - Stores: consent_agreed (boolean), consent_timestamp
+ *
+ * Data Stored in Database (user_sessions table):
+ * - session_id: Unique identifier generated for this session
+ * - user_id: Optional user identifier (currently null)
+ * - demographics: Complete demographic data object
+ * - age: Participant's age (integer)
+ * - gender: Participant's gender
+ * - ai_experience: Level of AI experience
+ * - moral_reasoning_experience: Level of moral reasoning experience
+ * - consent_agreed: Boolean indicating consent was given
+ * - consent_timestamp: ISO timestamp when consent was provided
+ * - created_at: Automatic timestamp
+ *
+ * Data Stored in localStorage:
+ * - 'userConsent': { agreed: boolean, timestamp: string }
+ * - 'userDemographics': { age, gender, aiExperience, moralReasoningExperience }
+ * - 'currentSessionId': Unique session identifier
+ *
+ * Flow Position: Step 1 of 13
+ * Next Page: /explicitvaluepage
+ *
+ * Notes:
+ * - Clears all localStorage on mount to ensure clean start
+ * - Requires all fields to be filled before proceeding
+ * - Age must be between 18-120
+ * - Consent checkbox must be checked to proceed
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleUser as UserCircle, ArrowRight, Flame, Shield, Users, Zap, Info } from 'lucide-react';

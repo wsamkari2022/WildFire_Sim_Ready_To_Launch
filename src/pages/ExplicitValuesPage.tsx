@@ -1,3 +1,55 @@
+/**
+ * EXPLICIT VALUES PAGE - BASELINE VALUE ASSESSMENT
+ *
+ * Purpose:
+ * - Collects explicit moral value preferences through simple everyday scenarios
+ * - Establishes baseline value profile for later consistency analysis
+ * - First step in value assessment (explicit before implicit)
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - explicitQuestions data: 5 pre-defined moral scenario questions
+ * - ExplicitValue type: TypeScript interface for value data
+ * - ProgressTracker component: Shows progress through value assessment stages
+ *
+ * Direct Database Calls:
+ * - None (data stored only in localStorage for now)
+ * - TODO: Should be inserted into 'baseline_values' table
+ *
+ * Data Stored in localStorage:
+ * - 'explicitValues': Array of ExplicitValue objects
+ *   Structure: [{ question_id, value_selected, timestamp }, ...]
+ *   Values: Safety, Efficiency, Sustainability, Fairness, Nonmaleficence
+ *
+ * Data Format (explicitValues):
+ * [
+ *   {
+ *     question_id: 1,
+ *     value_selected: "Safety", // One of the 5 moral values
+ *     timestamp: "2025-11-05T12:00:00.000Z"
+ *   },
+ *   ... (5 total questions)
+ * ]
+ *
+ * Future Database Storage (baseline_values table):
+ * - session_id: Link to user session
+ * - value_name: Selected value (Safety, Efficiency, etc.)
+ * - match_percentage: 100% for explicit choices
+ * - rank_order: Order of selection
+ * - value_type: 'explicit'
+ *
+ * Flow Position: Step 2 of 13
+ * Previous Page: /demographics
+ * Next Page: /preferences
+ *
+ * Notes:
+ * - Requires all 5 questions to be answered before proceeding
+ * - Each question maps to one of 5 core moral values
+ * - Data used for value consistency analysis in final stages
+ * - Scroll indicator reminds users to answer all questions
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Compass, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';

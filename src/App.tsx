@@ -1,3 +1,38 @@
+/**
+ * MAIN APPLICATION ROUTER
+ *
+ * Purpose:
+ * - Defines all application routes and navigation structure
+ * - Manages the complete study flow from demographics to completion
+ *
+ * Application Flow (in order):
+ * 1. /demographics - Informed consent and demographic data collection
+ * 2. /explicitvaluepage - Explicit moral value assessment
+ * 3. /preferences - Implicit value preference selection (drag & drop)
+ * 4. /completion - Implicit value completion confirmation
+ * 5. /values - Final implicit value assessment and matching
+ * 6. /tutorial - Pre-simulation tutorial and instructions
+ * 7. /simulation - Main wildfire scenario simulation (3 scenarios)
+ * 8. /thank-you - Post-simulation thank you page
+ * 9. /feedback - Comprehensive feedback form (CVR, APA, Viz, Overall)
+ * 10. /final-analysis - Detailed value analysis report (accessed from feedback)
+ * 11. /view-results - Session metrics and tracking data (accessed from feedback)
+ * 12. /results-feedback - Additional results-specific feedback
+ * 13. /study-complete - Final completion page
+ *
+ * Dependencies:
+ * - react-router-dom for routing
+ * - All page components listed above
+ *
+ * Database Interactions:
+ * - None (routing only, database calls handled by individual pages)
+ *
+ * Notes:
+ * - Default route (/) redirects to /demographics
+ * - No authentication or protected routes
+ * - Users can navigate back through browser history
+ */
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import DemographicPage from './pages/DemographicPage';

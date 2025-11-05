@@ -1,3 +1,63 @@
+/**
+ * VALUES PAGE - IMPLICIT VALUE ASSESSMENT (PART 3) & VALUE MATCHING
+ *
+ * Purpose:
+ * - Final step in value assessment phase
+ * - Analyzes and displays both explicit and implicit value results
+ * - Calculates value alignment and match percentages
+ * - Identifies stable vs context-dependent values
+ * - Stores final matched values for simulation use
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - implicitPrefernce, explicitValues types: Value data structures
+ * - explicitQuestions, ImplicitScenarios data: Question/scenario references
+ * - DatabaseService: Database operations
+ * - ProgressTracker component: Progress display
+ *
+ * Direct Database Calls:
+ * 1. DatabaseService.insertBaselineValues()
+ *    - Inserts matched stable values into 'baseline_values' table
+ *    - Stores: session_id, value_name, match_percentage, rank_order
+ *
+ * Data Read from localStorage:
+ * - 'deepValues': Implicit value assessment results
+ * - 'explicitValues': Explicit value choices from earlier
+ *
+ * Data Stored in localStorage:
+ * - 'finalValues': Top matched stable values (used in simulation)
+ * - 'ExplicitValueFrequencies': Frequency analysis of explicit choices
+ * - 'ImplicitValueFrequencies': Frequency analysis of implicit values
+ * - 'deepValues': Updated with full assessment results
+ *
+ * Data Format (finalValues):
+ * [\n *   { name: "Safety", matchPercentage: 85 },\n *   { name: "Fairness", matchPercentage: 70 },\n *   ...\n * ]
+ *
+ * Data Stored in Database (baseline_values table):
+ * - session_id: Link to user session
+ * - value_name: Matched value name (e.g., "Safety")
+ * - match_percentage: Alignment percentage (0-100)
+ * - rank_order: Priority ranking (1, 2, 3...)
+ * - value_type: 'matched_stable'
+ *
+ * Flow Position: Step 5 of 13
+ * Previous Page: /completion
+ * Next Page: /tutorial
+ *
+ * Key Algorithms:
+ * - Value Matching: Compares explicit choices with implicit value patterns
+ * - Stability Classification: Categorizes values as stable or context-dependent
+ * - Frequency Analysis: Calculates how often each value appears
+ * - Match Percentage: Determines alignment between explicit and implicit
+ *
+ * Notes:
+ * - Critical page for establishing user's value profile
+ * - Matched values drive simulation scenario recommendations
+ * - Provides transparency about value assessment results
+ * - Users can see how their choices reveal deeper values
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scale, AlertCircle, FileCheck, Brain, BarChart2, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -27,18 +87,6 @@ interface MatchedStableValue {
     matchPercentage: number;
 }
 
-/**
- * ValuesPage Component
- * 
- * This component displays the results of both explicit and implicit value assessments,
- * showing how a user's direct choices align with their deeper value patterns.
- * 
- * Key features:
- * - Displays explicit value choices from scenario responses
- * - Shows identified deep values from implicit assessment
- * - Calculates and displays value alignment statistics
- * - Orders matched stable values by match percentage
- */
 const ValuesPage: React.FC = () => {
     const navigate = useNavigate();
 

@@ -1,3 +1,55 @@
+/**
+ * PREFERENCES PAGE - IMPLICIT VALUE ASSESSMENT (PART 1)
+ *
+ * Purpose:
+ * - Collects implicit moral value preferences through contextual scenarios
+ * - First step of 3-page implicit value assessment flow
+ * - Users answer mid-level context scenarios to reveal underlying values
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - ImplicitScenarios data: Pre-defined contextual scenarios
+ * - implicitPrefernce types: UserResponse, DeepValue interfaces
+ * - ProgressTracker component: Shows progress through stages
+ *
+ * Direct Database Calls:
+ * - None (data stored only in localStorage)
+ * - TODO: Should be inserted into 'baseline_values' table with value_type='implicit'
+ *
+ * Data Stored in localStorage:
+ * - 'userResponses': Array of UserResponse objects
+ *   Structure: [{ scenarioId, selectedOption, followUpAnswer, deepValues }, ...]
+ *
+ * Data Format (userResponses):
+ * [
+ *   {
+ *     scenarioId: 1,
+ *     selectedOption: "Option A" // User's choice
+ *     followUpAnswer: true/false/null, // Follow-up question response
+ *     deepValues: [] // Populated in ValuesPage
+ *   },
+ *   ... (multiple scenarios)
+ * ]
+ *
+ * Future Database Storage (baseline_values table):
+ * - session_id: Link to user session
+ * - value_name: Derived implicit value
+ * - match_percentage: Calculated from scenario responses
+ * - rank_order: Priority order of implicit values
+ * - value_type: 'implicit'
+ *
+ * Flow Position: Step 3 of 13
+ * Previous Page: /explicitvaluepage
+ * Next Page: /completion
+ *
+ * Notes:
+ * - Clears previous responses on mount for clean start
+ * - Each scenario has multiple choice options
+ * - Some scenarios include follow-up questions
+ * - Responses used to calculate implicit value priorities
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
