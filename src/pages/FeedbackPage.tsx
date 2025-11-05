@@ -1,36 +1,146 @@
+/**
+ * FEEDBACK PAGE - COMPREHENSIVE FEEDBACK COLLECTION
+ *
+ * Purpose:
+ * - Collects detailed feedback on simulation experience
+ * - Includes CVR (Cognitive Value Recontextualization) feedback
+ * - Includes APA (Adaptive Preference Alignment) feedback
+ * - Includes Visualization/Expert Analysis feedback
+ * - Includes Overall experience feedback
+ * - Contains embedded "Final Analysis Report" modal (one of the 4 key pages)
+ * - Calculates and displays session metrics
+ * - Exports data in JSON/CSV format
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - chart.js, react-chartjs-2: Chart visualization in modal
+ * - SessionDVs, SimulationMetrics types: Data structures
+ * - TrackingManager: Event tracking utilities
+ * - DatabaseService: Database operations
+ * - ValueStabilityTable: Component for stability analysis
+ *
+ * Direct Database Calls:
+ * 1. DatabaseService.insertSessionFeedback()
+ *    - Inserts comprehensive feedback into 'session_feedback' table
+ *    - Stores all CVR, APA, visualization, and overall feedback ratings/comments
+ *    - Also stores calculated metrics: valueConsistencyIndex, performanceComposite, balanceIndex
+ *
+ * 2. DatabaseService.updateUserSession()
+ *    - Updates 'user_sessions' table with completion status
+ *    - Sets is_completed = true, completed_at timestamp
+ *
+ * 3. DatabaseService.syncFallbackData()
+ *    - Attempts to sync any failed database insertions from localStorage
+ *
+ * Data Read from localStorage:
+ * - 'simulationScenarioOutcomes': Scenario decisions and outcomes
+ * - 'finalSimulationMetrics': Final cumulative metrics
+ * - 'finalValues', 'MoralValuesReorderList': Value lists for alignment checking
+ * - 'sessionEventLogs': Complete telemetry logs
+ * - 'explicitValues', 'deepValues': For Final Analysis modal
+ * - 'ScenariosFinalDecisionLabels', 'CheckingAlignmentList': Decision tracking 
+ * 
+ * Data Stored in localStorage: 
+ * - 'sessionResults': Combined metrics and feedback data 
+ * 
+ * Data Stored in Database (session_feedback table): 
+ * CVR Feedback Fields: 
+ * - cvr_initial_reconsideration, cvr_final_reconsideration (boolean) 
+ * - cvr_purpose_clarity, cvr_confidence_change, cvr_helpfulness (1-7 scale) 
+ * - cvr_clarity, cvr_comfort_level, cvr_perceived_value (1-7 scale) 
+ * - cvr_overall_impact (1-7 scale) 
+ * - cvr_comments (text) 
+ * 
+ * APA Feedback Fields: 
+ * - apa_purpose_clarity, apa_ease_of_use, apa_control_understanding (1-7 scale) 
+ * - apa_decision_reflection, apa_scenario_alignment (boolean) 
+ * - apa_comparison_usefulness, apa_perspective_value (1-7 scale) 
+ * - apa_confidence_after_reordering, apa_perceived_value (1-7 scale) 
+ * - apa_tradeoff_challenge, apa_reflection_depth (1-7 scale) 
+ * - apa_comments (text) 
+ * 
+ * Visualization Feedback Fields: 
+ * - used_tradeoff_comparison (boolean) 
+ * - viz_clarity, viz_usefulness (1-7 scale) 
+ * - viz_tradeoff_evaluation, viz_tradeoff_justification (1-7 scale) 
+ * - viz_expert_usefulness (1-7 scale) 
+ * - viz_helpfulness, viz_expert_confidence_impact (boolean) 
+ * - viz_comments (text) 
+ * 
+ * Overall Feedback Fields: 
+ * - overall_scenario_alignment (boolean) 
+ * - overall_decision_satisfaction, overall_process_satisfaction (1-7 scale) 
+ * - overall_confidence_consistency, overall_learning_insight (1-7 scale) 
+ * - overall_comments (text) 
+ * 
+ * Calculated Metrics Stored: 
+ * - value_consistency_index: Percentage of aligned decisions 
+ * - performance_composite: Normalized average of all metrics 
+ * - balance_index: Measure of balanced decision-making 
+ * - cvr_arrivals, cvr_yes_count, cvr_no_count: CVR interaction counts 
+ * - apa_reorderings, total_switches, avg_decision_time: Behavioral metrics 
+ * - scenarios_final_decision_labels: Array of decision labels 
+ * - checking_alignment_list: Array of alignment status 
+ * 
+ * Flow Position: Step 9 of 13 
+ * Previous Page: /thank-you 
+ * Next Page: /results-feedback (or /study-complete if feedback submitted) 
+ * 
+ * Key Features: 
+ * - Comprehensive feedback form with 40+ questions 
+ * - Real-time metrics calculation and display 
+ * - Embedded \"Final Analysis Report\" modal with: 
+ *   - Value distribution charts 
+ *   - Value stability analysis 
+ *   - Decision alignment overview 
+ *   - Value consistency trends 
+ *   - Final simulation metrics 
+ * - Data export functionality (JSON/CSV) 
+ * - Links to additional analysis pages (/view-results, /final-analysis) 
+ * - Tooltips explaining each mechanism 
+ * 
+ * Notes: 
+ * - Most comprehensive data collection page 
+ * - Contains one of the 4 key analysis pages (Final Analysis Modal) 
+ * - All feedback stored in single database table 
+ * - Export creates downloadable files with complete session data 
+ * - Metrics calculated from localStorage event logs 
+ * - Database sync ensures no data loss 
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Star,
-  MessageSquare,
-  CheckCircle2,
-  Download,
-  BarChart2,
-  FileText,
-  ArrowRight,
-  Eye,
-  RefreshCcw,
-  TrendingUp,
-  BarChart3,
-  Lightbulb,
-  Info,
-  X,
-  Scale,
-  Brain,
-  Flame,
-  AlertTriangle,
-  Target,
+import { 
+  Star, 
+  MessageSquare, 
+  CheckCircle2, 
+  Download, 
+  BarChart2, 
+  FileText, 
+  ArrowRight, 
+  Eye, 
+  RefreshCcw, 
+  TrendingUp, 
+  BarChart3, 
+  Lightbulb, 
+  Info, 
+  X, 
+  Scale, 
+  Brain, 
+  Flame, 
+  AlertTriangle, 
+  Target, 
   XCircle
 } from 'lucide-react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  PointElement,
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  PointElement, 
   LineElement
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
@@ -40,14 +150,14 @@ import { TrackingManager } from '../utils/trackingUtils';
 import { DatabaseService } from '../lib/databaseService';
 import ValueStabilityTable from '../components/ValueStabilityTable';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
+ChartJS.register( 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  PointElement, 
+  LineElement, 
+  Title, 
+  Tooltip, 
   Legend
 );
 

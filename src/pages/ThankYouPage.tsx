@@ -1,3 +1,34 @@
+/**
+ * THANK YOU PAGE - POST-SIMULATION TRANSITION
+ *
+ * Purpose:
+ * - Congratulates participant on completing all 3 scenarios
+ * - Provides positive reinforcement and acknowledgment
+ * - Transitions to feedback phase
+ * - Confirms successful data recording
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ *
+ * Direct Database Calls:
+ * - None (transition/acknowledgment page only)
+ *
+ * Data Accessed from localStorage:
+ * - None directly (assumes simulation data already saved)
+ *
+ * Flow Position: Step 8 of 13
+ * Previous Page: /simulation
+ * Next Page: /feedback
+ *
+ * Notes:
+ * - Pure UI/UX transition page
+ * - Provides emotional closure for simulation phase
+ * - Prepares participant for feedback collection
+ * - Entrance animation for visual appeal
+ * - No data processing occurs here
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Award, CheckCircle, ArrowRight } from 'lucide-react';

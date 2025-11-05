@@ -1,26 +1,134 @@
+/**
+ * FINAL ANALYSIS PAGE - VALUE ASSESSMENT ANALYSIS (KEY PAGE #1)
+ *
+ * Purpose:
+ * - Comprehensive value consistency analysis across all phases
+ * - One of the 4 key analysis pages you specifically requested documentation for
+ * - Displays value distribution across explicit, implicit, and simulation phases
+ * - Shows value stability scores and alignment analysis
+ * - Visualizes consistency trends over time
+ * - Presents final simulation metrics
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - chart.js, react-chartjs-2: Bar and Line charts
+ * - SimulationMetrics, DecisionOption types: Data structures
+ * - ValueStabilityTable component: Detailed stability breakdown
+ *
+ * Direct Database Calls:
+ * - None (reads from localStorage only for display)
+ * - This is an analysis/visualization page
+ *
+ * Data Read from localStorage:
+ * - 'explicitValues': Baseline explicit value choices
+ * - 'deepValues': Implicit value assessment results
+ * - 'simulationScenarioOutcomes': Simulation decisions
+ * - 'finalSimulationMetrics': Cumulative metrics
+ * - 'ExplicitValueFrequencies': Frequency analysis of explicit values
+ * - 'ImplicitValueFrequencies': Frequency analysis of implicit values
+ * - 'ScenariosFinalDecisionLabels': Decision labels per scenario
+ * - 'CheckingAlignmentList': Alignment status per scenario
+ * - 'sessionEventLogs': Event logs for flag analysis
+ *
+ * Key Data Displayed: 
+ * 
+ * 1. Value Distribution Analysis (Bar Chart): 
+ *    - Compares value frequencies across 3 phases: 
+ *      - Explicit Choices (from explicit assessment) 
+ *      - Implicit Choices (from implicit assessment) 
+ *      - Simulation Decisions (from 3 scenarios) 
+ *    - Shows how often each of 5 values appeared in each phase 
+ *    - Visualizes shifts in value priorities 
+ * 
+ * 2. Value Stability Analysis: 
+ *    - Overall Stability Score (weighted: 40% explicit, 60% implicit) 
+ *    - Per-scenario stability scores 
+ *    - Matches between selected values and baseline preferences 
+ *    - Detailed stability table with: 
+ *      - Scenario ID 
+ *      - Selected Value 
+ *      - Matches Explicit (boolean) 
+ *      - Matches Implicit (boolean) 
+ *      - Stability Score (0-100) 
+ * 
+ * 3. Decision Alignment Overview: 
+ *    - Overall alignment rate (X/3 scenarios) 
+ *    - Per-scenario alignment cards showing: 
+ *      - Final decision label 
+ *      - Aligned/Not Aligned status 
+ *      - Interaction flags: CVR responses, APA reorderings 
+ * 
+ * 4. Value Consistency Trend (Line Chart): 
+ *    - Tracks consistency scores across phases 
+ *    - X-axis: Explicit Choices → Implicit Choices → Scenario 1 → Scenario 2 → Scenario 3 
+ *    - Y-axis: Consistency Score (0-100%) 
+ *    - Separate line for each value selected in scenarios 
+ *    - Shows value priority evolution over time 
+ * 
+ * 5. Final Simulation Metrics: 
+ *    - Lives Saved 
+ *    - Casualties 
+ *    - Resource remaining percentages 
+ *    - Infrastructure, biodiversity, properties, nuclear station conditions 
+ * 
+ * Flow Position: Step 10 of 13 (accessed from /feedback) 
+ * Previous Page: /feedback 
+ * Next Page: Back to /feedback 
+ * 
+ * Calculation Details: 
+ * 
+ * Stability Score Calculation: 
+ * - If value matches explicit choices: +40 points 
+ * - If value matches implicit choices: +60 points 
+ * - Maximum score: 100 (matches both) 
+ * - Used to assess value-decision consistency 
+ * 
+ * Alignment Determination: 
+ * - Aligned: Selected option's value is in top-2 matched values AND no CVR \"yes\" answers 
+ * - Not Aligned: Otherwise 
+ * 
+ * Consistency Trend Scores: 
+ * - Explicit Phase: % of times value appeared in explicit choices 
+ * - Implicit Phase: % of times value appeared in implicit choices 
+ * - Scenario Phases: 
+ *   - 100 if value was selected in that scenario 
+ *   - 50 if value was in top-2 but not selected 
+ *   - 0 otherwise 
+ * 
+ * Notes: 
+ * - Critical analysis page for research insights 
+ * - All data comes from localStorage (no database calls) 
+ * - Provides visual feedback on value consistency 
+ * - Helps participants understand their decision patterns 
+ * - Charts use Chart.js for interactive visualizations 
+ * - Color-coded alignment status for quick interpretation 
+ * - Includes interaction flags from CVR and APA mechanisms
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  BarChart2,
-  TrendingUp,
-  AlertTriangle,
-  ArrowRight,
-  Scale,
-  Brain,
-  Flame,
-  Target,
-  CheckCircle2,
+import { 
+  BarChart2, 
+  TrendingUp, 
+  AlertTriangle, 
+  ArrowRight, 
+  Scale, 
+  Brain, 
+  Flame, 
+  Target, 
+  CheckCircle2, 
   XCircle
 } from 'lucide-react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  PointElement,
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  PointElement, 
   LineElement
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
@@ -28,14 +136,14 @@ import { SimulationMetrics, DecisionOption } from '../types';
 import ValueStabilityTable from '../components/ValueStabilityTable';
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
+ChartJS.register( 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  PointElement, 
+  LineElement, 
+  Title, 
+  Tooltip, 
   Legend
 );
 

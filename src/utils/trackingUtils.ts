@@ -1,3 +1,76 @@
+/**
+ * TRACKING MANAGER - EVENT TRACKING & TELEMETRY
+ *
+ * Purpose:
+ * - Centralized event tracking system for simulation interactions
+ * - Records all user actions and decisions
+ * - Maintains session-wide telemetry logs
+ * - Interfaces with DatabaseService for persistence
+ * - Tracks per-scenario behavioral metrics
+ *
+ * Dependencies:
+ * - TelemetryEvent, ScenarioTracking types: Event data structures
+ * - DatabaseService: Database persistence
+ *
+ * Key Features:
+ * - Scenario-level tracking (start, interactions, completion)
+ * - Option selection tracking with switch detection
+ * - CVR interaction tracking (visits, answers)
+ * - APA reordering tracking
+ * - Alternative exploration tracking
+ * - Radar chart view tracking
+ * - Cumulative session event logs
+ * - Automatic database insertion
+ *
+ * Tracked Events:
+ * - scenario_started: When scenario begins
+ * - option_selected: When user selects an option
+ * - option_confirmed: When user confirms final decision
+ * - cvr_visited: When CVR modal opened
+ * - cvr_answered: When CVR question answered
+ * - apa_reordered: When values reordered
+ * - alternatives_explored: When alternative options viewed
+ * - radar_viewed: When radar chart opened
+ * - scenario_completed: When scenario confirmed
+ *
+ * Per-Scenario Tracking State:
+ * - scenarioId: Current scenario ID
+ * - startTime: Timestamp when scenario started
+ * - optionSelections: Array of all option selections
+ * - cvrVisited: Boolean flag
+ * - cvrVisitCount: Number of CVR modal opens
+ * - cvrYesAnswers: Count of "Yes" answers
+ * - cvrNoAnswers: Count of "No" answers
+ * - apaReordered: Boolean flag
+ * - apaReorderCount: Number of reordering events
+ * - alternativesExplored: Boolean flag
+ * - alternativesExploredCount: Number of alternative views
+ * - switchCount: Number of option changes
+ *
+ * localStorage Management:
+ * - 'sessionEventLogs': Array of all TelemetryEvent objects
+ * - Persistent across page reloads
+ * - Used for metrics calculation and analysis
+ *
+ * Database Integration:
+ * - Automatically calls DatabaseService methods
+ * - Inserts to scenario_interactions table
+ * - No need for manual database calls
+ *
+ * Usage Pattern:
+ * 1. Call startScenario(id) when scenario begins
+ * 2. Call tracking methods as user interacts
+ * 3. Call getScenarioSummary() for current stats
+ * 4. Call getAllEvents() to retrieve complete log
+ *
+ * Notes:
+ * - Static class (no instantiation)
+ * - Thread-safe (single scenario at a time)
+ * - Comprehensive behavioral data capture
+ * - Critical for research analysis
+ * - Events stored both in memory and localStorage
+ */
+
 import { TelemetryEvent, ScenarioTracking } from '../types/tracking';
 import { DatabaseService } from '../lib/databaseService';
 

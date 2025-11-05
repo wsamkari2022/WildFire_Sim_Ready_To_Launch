@@ -1,3 +1,89 @@
+/**
+ * SIMULATION MAIN PAGE - WILDFIRE CRISIS SCENARIOS
+ *
+ * Purpose:
+ * - Main simulation interface for 3 wildfire crisis scenarios
+ * - Implements decision-making with AI expert agents
+ * - Tracks user interactions with CVR and APA mechanisms
+ * - Records comprehensive telemetry data for analysis
+ * - Calculates cumulative metrics across scenarios
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - chart.js, react-chartjs-2: Radar chart visualization
+ * - Multiple custom components: MetricsDisplay, DecisionOption, RadarChart, etc.
+ * - scenarios data: 3 pre-defined wildfire scenarios
+ * - TrackingManager: Event tracking and telemetry
+ * - DatabaseService: Database operations
+ *
+ * Direct Database Calls:
+ * 1. DatabaseService.insertScenarioInteraction() - Records each interaction in 'scenario_interactions' table
+ * 2. DatabaseService.insertCVRResponse() - Records CVR responses in 'cvr_responses' table
+ * 3. DatabaseService.insertAPAReordering() - Records value reordering in 'apa_reorderings' table
+ * 4. DatabaseService.insertFinalDecision() - Records final decisions in 'final_decisions' table
+ * 5. DatabaseService.insertValueEvolution() - Records value changes in 'value_evolution' table
+ *
+ * Data Read from localStorage:
+ * - 'finalValues': Top matched stable values from ValuesPage
+ * - 'explicitValues': Baseline explicit value choices
+ *
+ * Data Stored in localStorage (simulation outcomes):
+ * - 'simulationScenarioOutcomes': Array of {scenarioId, decision, topTwoValuesAtDecision}
+ * - 'finalSimulationMetrics': Final cumulative metrics
+ * - 'sessionEventLogs': Complete telemetry event log
+ * - 'ScenariosFinalDecisionLabels': Array of decision labels per scenario
+ * - 'CheckingAlignmentList': Array of "Aligned"/"Not Aligned" per scenario
+ * - 'MoralValuesReorderList': Final reordered moral values list
+ * - 'Scenario1/2/3_MoralValueReordered': Per-scenario reordered values
+ * - 'Scenario3_InfeasibleOptions': Infeasible options checked (Scenario 3 only)
+ *
+ * Data Stored in Database Tables:
+ *
+ * scenario_interactions: Every user interaction event
+ * - session_id, scenario_id, event_type (option_selected, confirmed, radar_viewed, etc.)
+ * - option details, is_aligned, time_since_start, switch_count
+ *
+ * cvr_responses: CVR question answers
+ * - session_id, scenario_id, cvr_question, user_answer (yes/no)
+ * - response_time_ms, decision_changed_after
+ *
+ * apa_reorderings: Value reordering events
+ * - session_id, scenario_id, preference_type (moral_values/simulation_metrics)
+ * - values_before, values_after (JSONB arrays)
+ *
+ * final_decisions: Confirmed decisions per scenario
+ * - session_id, scenario_id, option details, is_aligned
+ * - total_switches, total_time_seconds
+ * - cvr_visited, cvr_visit_count, cvr_yes_answers
+ * - apa_reordered, apa_reorder_count
+ * - final_metrics (JSONB), infeasible_options_checked (JSONB)
+ *
+ * value_evolution: Changes in value priorities
+ * - session_id, value_list_snapshot (JSONB)
+ * - change_trigger, change_type
+ *
+ * Flow Position: Step 7 of 13 (Core simulation phase)
+ * Previous Page: /tutorial
+ * Next Page: /thank-you
+ *
+ * Key Features:
+ * - 3 Sequential wildfire scenarios
+ * - AI expert agents (Safety, Efficiency, Fairness, Sustainability, Nonmaleficence)
+ * - CVR (Cognitive Value Recontextualization) mechanism
+ * - APA (Adaptive Preference Alignment) mechanism
+ * - Real-time metrics visualization
+ * - Comprehensive event tracking
+ * - Value alignment checking
+ *
+ * Notes:
+ * - Most complex component in application
+ * - Generates majority of research data
+ * - Uses TrackingManager for centralized logging
+ * - Automatic database saves with localStorage fallback
+ * - Scenario 3 includes infeasible options feature
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flame, Check, BarChart2, Lightbulb, X, AlertTriangle, Eye } from 'lucide-react';

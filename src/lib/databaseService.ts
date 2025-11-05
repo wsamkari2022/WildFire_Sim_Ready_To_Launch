@@ -1,3 +1,51 @@
+/**
+ * DATABASE SERVICE - SUPABASE DATABASE OPERATIONS
+ *
+ * Purpose:
+ * - Centralized service for all database interactions
+ * - Provides methods for inserting/updating data in Supabase
+ * - Implements localStorage fallback for offline scenarios
+ * - Handles session management and data persistence
+ *
+ * Dependencies:
+ * - supabaseClient: Supabase connection instance
+ *
+ * Database Tables Used:
+ * 1. user_sessions: Participant demographics and session metadata
+ * 2. baseline_values: Explicit and implicit value assessments
+ * 3. scenario_interactions: Every user interaction during simulation
+ * 4. cvr_responses: CVR question answers and response times
+ * 5. apa_reorderings: Value reordering events
+ * 6. final_decisions: Confirmed decisions per scenario
+ * 7. value_evolution: Changes in value priorities
+ * 8. session_feedback: Comprehensive post-simulation feedback
+ *
+ * Key Features:
+ * - Automatic localStorage fallback on database failure
+ * - Session ID generation and management
+ * - Batch sync of failed operations
+ * - Type-safe interfaces for all database operations
+ * - Error logging for debugging
+ *
+ * Fallback Mechanism:
+ * - If database insert fails, data saved to localStorage with prefix 'db_fallback_'
+ * - syncFallbackData() attempts to sync all failed operations
+ * - Marks successfully synced items to prevent duplicates
+ *
+ * Usage Pattern:
+ * 1. Call appropriate insert method (e.g., insertScenarioInteraction)
+ * 2. Method attempts Supabase insertion
+ * 3. On failure, saves to localStorage fallback
+ * 4. Returns success/failure boolean
+ * 5. Periodically or on completion, call syncFallbackData()
+ *
+ * Notes:
+ * - All methods are static (no instantiation needed)
+ * - Uses TypeScript interfaces for type safety
+ * - Comprehensive error handling and logging
+ * - Critical for data integrity and no data loss
+ */
+
 import { supabase } from './supabaseClient';
 
 export interface UserSession {

@@ -1,3 +1,43 @@
+/**
+ * TUTORIAL PAGE - PRE-SIMULATION INSTRUCTIONS
+ *
+ * Purpose:
+ * - Provides video tutorial explaining the simulation interface and process
+ * - Prepares participants for the wildfire crisis scenarios
+ * - Ensures participants understand decision-making mechanics
+ * - Transition between value assessment and simulation phases
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - YouTube iframe API: Video player integration
+ *
+ * Direct Database Calls:
+ * - None (instructional page only)
+ *
+ * Data Accessed from localStorage:
+ * - None directly (preparation page before simulation)
+ *
+ * Flow Position: Step 6 of 13
+ * Previous Page: /values
+ * Next Page: /simulation
+ *
+ * Features:
+ * - Embedded YouTube tutorial video
+ * - Video completion tracking via YouTube API
+ * - Manual "I've watched" confirmation option
+ * - Replay functionality
+ * - Proceed button disabled until video watched
+ * - Tutorial overview bullet points
+ *
+ * Notes:
+ * - Critical preparation step before main simulation
+ * - Listens to YouTube postMessage events to detect video completion
+ * - Users can manually mark as watched if needed
+ * - No data persistence required (purely instructional)
+ * - Video ID: VbISk2VL0G8 (can be updated as needed)
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlayCircle, ArrowRight, Video, RotateCcw, CheckCircle } from 'lucide-react';

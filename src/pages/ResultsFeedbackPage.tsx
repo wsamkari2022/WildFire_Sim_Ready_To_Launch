@@ -1,3 +1,46 @@
+/**
+ * RESULTS FEEDBACK PAGE - ADDITIONAL RESULTS FEEDBACK (KEY PAGE #4)
+ *
+ * Purpose:
+ * - Collects additional feedback specifically about results presentation
+ * - One of the 4 key analysis pages you specifically requested documentation for
+ * - Displays session results with feedback collection
+ * - Allows participants to provide targeted feedback on results clarity
+ * - Final feedback collection before study completion
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - SimulationMetrics, SessionDVs, TelemetryEvent types: Data structures
+ * - TrackingManager: Event tracking
+ * - DatabaseService: Database operations
+ *
+ * Direct Database Calls:
+ * - DatabaseService.updateSessionStatus()
+ *   - Updates 'user_sessions' table with feedback completion status
+ *
+ * Data Read from localStorage:
+ * - Session metrics and results data
+ * - All tracking and telemetry data
+ *
+ * Data Stored in localStorage:
+ * - Results-specific feedback responses
+ *
+ * Data Stored in Database (user_sessions table):
+ * - Updated status indicating results feedback completion
+ * - Timestamp of results feedback submission
+ *
+ * Flow Position: Step 12 of 13
+ * Previous Page: /feedback
+ * Next Page: /study-complete
+ *
+ * Notes:
+ * - Final opportunity for participant feedback
+ * - Focuses on results presentation clarity
+ * - Shorter form compared to main feedback page
+ * - Prepares for final study completion
+ */
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -560,7 +603,7 @@ const ResultsFeedbackPage: React.FC = () => {
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center">
                   <ThumbsUp className="h-5 w-5 text-green-500 mr-3" />
-                  <span className="text-sm font-medium text-gray-700">"Yes, I would" Answers</span>
+    return [headers.join(','), values.join(',')].join('\n');
                 </div>
                 <span className="text-xl font-bold text-green-600">{metrics.cvrYesCount}</span>
               </div>

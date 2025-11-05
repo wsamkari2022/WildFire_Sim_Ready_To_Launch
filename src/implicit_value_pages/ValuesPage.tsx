@@ -32,7 +32,11 @@
  * - 'deepValues': Updated with full assessment results
  *
  * Data Format (finalValues):
- * [\n *   { name: "Safety", matchPercentage: 85 },\n *   { name: "Fairness", matchPercentage: 70 },\n *   ...\n * ]
+ * [ 
+ *   { name: "Safety", matchPercentage: 85 }, 
+ *   { name: "Fairness", matchPercentage: 70 }, 
+ *   ... 
+ * ]
  *
  * Data Stored in Database (baseline_values table):
  * - session_id: Link to user session

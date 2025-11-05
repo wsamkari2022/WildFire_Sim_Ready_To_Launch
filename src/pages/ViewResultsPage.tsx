@@ -1,17 +1,135 @@
+/**
+ * VIEW RESULTS PAGE - SESSION METRICS & TRACKING DATA (KEY PAGE #3)
+ *
+ * Purpose:
+ * - Displays comprehensive session metrics and behavioral data
+ * - One of the 4 key analysis pages you specifically requested documentation for
+ * - Shows CVR (Cognitive Value Recontextualization) interaction statistics
+ * - Shows APA (Adaptive Preference Alignment) reordering statistics
+ * - Displays per-scenario behavioral metrics (switches, time, CVR/APA counts)
+ * - Calculates performance indices
+ * - Includes detailed debug tracking table for research analysis
+ *
+ * Dependencies:
+ * - react-router-dom: Navigation
+ * - lucide-react: UI icons
+ * - SessionDVs, TelemetryEvent types: Tracking data structures
+ * - SimulationMetrics type: Simulation metrics structure
+ * - TrackingManager: Event tracking utilities
+ *
+ * Direct Database Calls:
+ * - None (reads from localStorage only for display)
+ * - This is an analysis/visualization page
+ *
+ * Data Read from localStorage:
+ * - 'simulationScenarioOutcomes': Scenario decisions and outcomes
+ * - 'finalSimulationMetrics': Final cumulative metrics
+ * - 'finalValues', 'MoralValuesReorderList': Value lists for alignment
+ * - 'sessionEventLogs': Complete telemetry event logs (via TrackingManager)
+ * - 'ScenariosFinalDecisionLabels': Decision labels per scenario
+ * - 'CheckingAlignmentList': Alignment status per scenario
+ * - 'Scenario1/2/3_MoralValueReordered': Per-scenario reordered values
+ * - 'Scenario3_InfeasibleOptions': Infeasible options with checked status
+ *
+ * Key Metrics Calculated & Displayed:
+ *
+ * 1. Summary Cards (Top Row): 
+ *    - CVR Arrivals: Total times CVR modal was opened 
+ *    - APA Reorderings: Total value reordering events 
+ *    - Total Switches: Total option changes across scenarios 
+ *    - Avg Decision Time: Average seconds per scenario 
+ * 
+ * 2. CVR Answers Breakdown: 
+ *    - "Yes, I would" answers: Count of CVR affirmative responses 
+ *    - "No, I would not" answers: Count of CVR negative responses 
+ * 
+ * 3. Post-CVR/APA Alignment Changes: 
+ *    - Misalignment Switches: Decisions that became misaligned 
+ *    - Realignment Switches: Decisions that became aligned after CVR/APA 
+ * 
+ * 4. Performance Indices: 
+ *    - Value Consistency Index: % of aligned decisions (0-100%) 
+ *    - Performance Composite: Normalized average of all metrics (0-1) 
+ *    - Balance Index: Measure of balanced outcomes (0-1) 
+ * 
+ * 5. Scenario Details Table: 
+ *    Per-scenario breakdown showing: 
+ *    - Final Choice (decision label) 
+ *    - Switches (option changes) 
+ *    - Time (seconds) 
+ *    - CVR Visits (number of times CVR opened) 
+ *    - CVR "Yes" (affirmative answers) 
+ *    - APA Count (reordering events) 
+ * 
+ * 6. Debug Tracking Table (Comprehensive Research Data): 
+ *    Detailed per-scenario analysis with: 
+ *    - Value Lists Used: 
+ *      - Scenario-specific reordered values 
+ *      - FinalTopTwoValues at confirmation 
+ *      - Infeasible options (Scenario 3 only) with checked status 
+ *    - Final Decision Label 
+ *    - Alignment Status (Aligned/Not Aligned) 
+ *    - Flags at Confirmation: 
+ *      - APA Reordered (boolean) 
+ *      - CVR "Yes" (boolean) 
+ *      - CVR "No" (boolean) 
+ *      - Simulation Metrics Reordering (boolean) 
+ *      - Moral Values Reordering (boolean) 
+ *    - Interaction Counters: 
+ *      - APA Reorders count 
+ *      - CVR "Yes" count 
+ *      - CVR "No" count 
+ *      - Alternatives Added count 
+ *      - Option Switches count 
+ * 
+ * Flow Position: Step 11 of 13 (accessed from /feedback) 
+ * Previous Page: /feedback 
+ * Next Page: Back to /feedback 
+ * 
+ * Calculation Details: 
+ * 
+ * Value Consistency Index: 
+ * - Counts scenarios where decision aligned with baseline values 
+ * - Formula: (aligned_count / total_scenarios) * 100 
+ * 
+ * Performance Composite: 
+ * - Normalizes all metrics to 0-1 scale 
+ * - Calculates mean of normalized values 
+ * - Represents overall performance quality 
+ * 
+ * Balance Index: 
+ * - Calculates variance of normalized metrics 
+ * - Formula: 1 - variance 
+ * - Higher value = more balanced outcomes 
+ * 
+ * Alignment Determination: 
+ * - Scenario 1: Uses matchedStableValues list 
+ * - Scenarios 2 & 3: Uses moralValuesReorderList 
+ * - Aligned if: value in list AND no CVR "yes" answers 
+ * 
+ * Notes: 
+ * - Most detailed metrics page for research analysis 
+ * - Debug table shows all value lists and flags used 
+ * - Infeasible options display includes checkbox status 
+ * - All counters derived from event logs 
+ * - Color-coded for quick visual analysis 
+ * - Critical for understanding participant behavior patterns 
+ * - Shows impact of CVR and APA interventions 
+ */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  BarChart3,
-  Clock,
-  RotateCcw,
-  TrendingUp,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  MessageSquare,
-  Activity,
-  ThumbsUp,
-  ThumbsDown,
+import { 
+  BarChart3, 
+  Clock, 
+  RotateCcw, 
+  TrendingUp, 
+  CheckCircle2, 
+  XCircle, 
+  Eye, 
+  MessageSquare, 
+  Activity, 
+  ThumbsUp, 
+  ThumbsDown, 
   ArrowLeft
 } from 'lucide-react';
 import { SessionDVs, TelemetryEvent } from '../types/tracking';
