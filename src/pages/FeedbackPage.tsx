@@ -849,7 +849,7 @@ const FeedbackPage: React.FC = () => {
                 Purpose Clarity: How clear was the purpose of the CVR section in helping you reconsider your decisions and reinterpret your values when faced with new or changing moral contexts?
               </label>
               <div className="flex items-center space-x-4">
-                <span className="text-xs text-gray-500 w-20 text-left">Very unclear</span>
+                <span className="text-xs text-gray-500 w-4">1</span>
                 <input
                   type="range"
                   min="1"
@@ -859,12 +859,14 @@ const FeedbackPage: React.FC = () => {
                   className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                   disabled={isSubmitted}
                 />
-                <span className="text-xs text-gray-500 w-20 text-right">Very clear</span>
-              </div>
-              <div className="text-center mt-2">
-                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <span className="text-xs text-gray-500 w-4">7</span>
+                <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold w-10 text-center">
                   {feedback.cvrPurposeClarity}
                 </span>
+              </div>
+              <div className="flex justify-between mt-2 px-1">
+                <span className="text-xs text-gray-400 italic">Very Unclear</span>
+                <span className="text-xs text-gray-400 italic">Very Clear</span>
               </div>
             </div>
 
