@@ -18,11 +18,11 @@
  * - DatabaseService: Database operations
  *
  * Direct Database Calls:
- * 1. DatabaseService.insertScenarioInteraction() - Records each interaction in 'scenario_interactions' table
- * 2. DatabaseService.insertCVRResponse() - Records CVR responses in 'cvr_responses' table
- * 3. DatabaseService.insertAPAReordering() - Records value reordering in 'apa_reorderings' table
- * 4. DatabaseService.insertFinalDecision() - Records final decisions in 'final_decisions' table
- * 5. DatabaseService.insertValueEvolution() - Records value changes in 'value_evolution' table
+ * 1. MongoService.insertScenarioInteraction() - Records each interaction in 'scenario_interactions' table
+ * 2. MongoService.insertCVRResponse() - Records CVR responses in 'cvr_responses' table
+ * 3. MongoService.insertAPAReordering() - Records value reordering in 'apa_reorderings' table
+ * 4. MongoService.insertFinalDecision() - Records final decisions in 'final_decisions' table
+ * 5. MongoService.insertValueEvolution() - Records value changes in 'value_evolution' table
  *
  * Data Read from localStorage:
  * - 'finalValues': Top matched stable values from ValuesPage
@@ -101,7 +101,7 @@ import ReviewOptionModal from './components/ReviewOptionModal';
 import { SimulationMetrics, DecisionOption as DecisionOptionType, ExplicitValue } from './types';
 import { scenarios } from './data/scenarios';
 import { TrackingManager } from './utils/trackingUtils';
-import { DatabaseService } from './lib/databaseService';
+import { MongoService } from './lib/mongoService';
 
 // Register Chart.js components
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -967,7 +967,7 @@ const SimulationMainPage: React.FC = () => {
     const scenarioTracking = TrackingManager.endScenario();
 
     // Save final decision to database
-    const sessionId = DatabaseService.getSessionId();
+    const sessionId = MongoService.getSessionId();
     if (scenarioTracking) {
       // For scenario 3, collect all infeasible options and which were checked
       let allInfeasibleOptions: any[] = [];
@@ -1015,7 +1015,7 @@ const SimulationMainPage: React.FC = () => {
         localStorage.setItem('Scenario3_InfeasibleOptions', JSON.stringify(allInfeasibleOptions));
       }
 
-      DatabaseService.insertFinalDecision({
+      MongoService.insertFinalDecision({
         session_id: sessionId,
         scenario_id: currentScenario.id,
         scenario_title: currentScenario.title,

@@ -14,7 +14,7 @@
  * - DatabaseService: Database operations
  *
  * Direct Database Calls:
- * - DatabaseService.updateSessionStatus()
+ * - MongoService.updateSessionStatus()
  *   - Updates 'user_sessions' table with final completion status
  *   - Sets: status='completed', study_fully_completed=true, completed_at timestamp
  *
@@ -42,7 +42,7 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Sparkles, CheckCircle, Star, Award, TrendingUp } from 'lucide-react';
 import { TrackingManager } from '../utils/trackingUtils';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 
 const StudyCompletePage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -65,13 +65,13 @@ const StudyCompletePage: React.FC = () => {
 
       const sessionId = localStorage.getItem('sessionId');
       if (sessionId) {
-        await DatabaseService.updateSessionStatus(sessionId, {
+        await MongoService.updateSessionStatus(sessionId, {
           status: 'completed',
           completed_at: new Date().toISOString(),
           study_fully_completed: true
         });
 
-        await DatabaseService.syncFallbackData();
+        await MongoService.syncFallbackData();
       }
     };
 

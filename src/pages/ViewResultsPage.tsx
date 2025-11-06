@@ -135,6 +135,7 @@ import {
 import { SessionDVs, TelemetryEvent } from '../types/tracking';
 import { SimulationMetrics } from '../types';
 import { TrackingManager } from '../utils/trackingUtils';
+import { MongoService } from '../lib/mongoService';
 
 const ViewResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ const ViewResultsPage: React.FC = () => {
     calculateMetrics();
   }, []);
 
-  const calculateMetrics = () => {
+  const calculateMetrics = async () => {
     try {
       const simulationOutcomes = JSON.parse(localStorage.getItem('simulationScenarioOutcomes') || '[]');
       const finalMetrics: SimulationMetrics = JSON.parse(localStorage.getItem('finalSimulationMetrics') || 'null');
@@ -330,6 +331,29 @@ const ViewResultsPage: React.FC = () => {
       };
 
       setMetrics(calculatedMetrics);
+
+      const sessionId = MongoService.getSessionId();
+      const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
+      const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
+      const finalValues = JSON.parse(localStorage.getItem('finalValues') || '[]').map((v: any) => v.name || v);
+      const moralValuesReorderListForMetrics = moralValuesReorderList.map((v: string) => v.charAt(0).toUpperCase() + v.slice(1));
+      const scenario1MoralValueReordered = JSON.parse(localStorage.getItem('Scenario1_MoralValueReordered') || '[]');
+      const scenario2MoralValueReordered = JSON.parse(localStorage.getItem('Scenario2_MoralValueReordered') || '[]');
+      const scenario3MoralValueReordered = JSON.parse(localStorage.getItem('Scenario3_MoralValueReordered') || '[]');
+      const scenario3InfeasibleOptions = JSON.parse(localStorage.getItem('Scenario3_InfeasibleOptions') || '[]');
+
+      await MongoService.insertSessionMetrics({
+        session_id: sessionId,
+        ...calculatedMetrics,
+        scenarios_final_decision_labels: scenariosFinalDecisionLabels,
+        checking_alignment_list: checkingAlignmentList,
+        final_values: finalValues,
+        moral_values_reorder_list: moralValuesReorderListForMetrics,
+        scenario1_moral_value_reordered: scenario1MoralValueReordered,
+        scenario2_moral_value_reordered: scenario2MoralValueReordered,
+        scenario3_moral_value_reordered: scenario3MoralValueReordered,
+        scenario3_infeasible_options: scenario3InfeasibleOptions
+      });
     } catch (error) {
       console.error('Error calculating metrics:', error);
     }

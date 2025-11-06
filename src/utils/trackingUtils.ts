@@ -5,12 +5,12 @@
  * - Centralized event tracking system for simulation interactions
  * - Records all user actions and decisions
  * - Maintains session-wide telemetry logs
- * - Interfaces with DatabaseService for persistence
+ * - Interfaces with MongoService for persistence
  * - Tracks per-scenario behavioral metrics
  *
  * Dependencies:
  * - TelemetryEvent, ScenarioTracking types: Event data structures
- * - DatabaseService: Database persistence
+ * - MongoService: Database persistence
  *
  * Key Features:
  * - Scenario-level tracking (start, interactions, completion)
@@ -53,7 +53,7 @@
  * - Used for metrics calculation and analysis
  *
  * Database Integration:
- * - Automatically calls DatabaseService methods
+ * - Automatically calls MongoService methods
  * - Inserts to scenario_interactions table
  * - No need for manual database calls
  *
@@ -72,7 +72,7 @@
  */
 
 import { TelemetryEvent, ScenarioTracking } from '../types/tracking';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 
 export class TrackingManager {
   private static currentScenarioTracking: ScenarioTracking | null = null;
@@ -100,8 +100,8 @@ export class TrackingManager {
       timeSinceScenarioOpen: 0
     });
 
-    const sessionId = DatabaseService.getSessionId();
-    DatabaseService.insertScenarioInteraction({
+    const sessionId = MongoService.getSessionId();
+    MongoService.insertScenarioInteraction({
       session_id: sessionId,
       scenario_id: scenarioId,
       scenario_title: `Scenario ${scenarioId}`,
@@ -115,7 +115,7 @@ export class TrackingManager {
 
     const now = Date.now();
     const timeSinceStart = now - this.currentScenarioTracking.startTime;
-    const sessionId = DatabaseService.getSessionId();
+    const sessionId = MongoService.getSessionId();
 
     // Check if this is a switch (different from previous selection)
     if (this.currentScenarioTracking.optionSelections.length > 0) {
@@ -139,7 +139,7 @@ export class TrackingManager {
             timeSinceScenarioOpen: timeSinceStart
           });
 
-          DatabaseService.insertScenarioInteraction({
+          MongoService.insertScenarioInteraction({
             session_id: sessionId,
             scenario_id: this.currentScenarioTracking.scenarioId,
             scenario_title: `Scenario ${this.currentScenarioTracking.scenarioId}`,
@@ -172,7 +172,7 @@ export class TrackingManager {
       timeSinceScenarioOpen: timeSinceStart
     });
 
-    DatabaseService.insertScenarioInteraction({
+    MongoService.insertScenarioInteraction({
       session_id: sessionId,
       scenario_id: this.currentScenarioTracking.scenarioId,
       scenario_title: `Scenario ${this.currentScenarioTracking.scenarioId}`,
@@ -243,8 +243,8 @@ export class TrackingManager {
       timeSinceScenarioOpen: timeSinceStart
     });
 
-    const sessionId = DatabaseService.getSessionId();
-    DatabaseService.insertScenarioInteraction({
+    const sessionId = MongoService.getSessionId();
+    MongoService.insertScenarioInteraction({
       session_id: sessionId,
       scenario_id: scenarioId,
       scenario_title: `Scenario ${scenarioId}`,
@@ -275,9 +275,9 @@ export class TrackingManager {
       timeSinceScenarioOpen: timeSinceStart
     });
 
-    const sessionId = DatabaseService.getSessionId();
+    const sessionId = MongoService.getSessionId();
     if (optionId && optionLabel && cvrQuestion) {
-      DatabaseService.insertCVRResponse({
+      MongoService.insertCVRResponse({
         session_id: sessionId,
         scenario_id: scenarioId,
         option_id: optionId,
@@ -309,8 +309,8 @@ export class TrackingManager {
       timeSinceScenarioOpen: timeSinceStart
     });
 
-    const sessionId = DatabaseService.getSessionId();
-    DatabaseService.insertAPAReordering({
+    const sessionId = MongoService.getSessionId();
+    MongoService.insertAPAReordering({
       session_id: sessionId,
       scenario_id: scenarioId,
       preference_type: preferenceType,
@@ -319,7 +319,7 @@ export class TrackingManager {
       time_spent_ms: Math.round(timeSinceStart)
     });
 
-    DatabaseService.insertValueEvolution({
+    MongoService.insertValueEvolution({
       session_id: sessionId,
       scenario_id: scenarioId,
       value_list_snapshot: valuesAfter,

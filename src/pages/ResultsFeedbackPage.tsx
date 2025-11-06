@@ -16,7 +16,7 @@
  * - DatabaseService: Database operations
  *
  * Direct Database Calls:
- * - DatabaseService.updateSessionStatus()
+ * - MongoService.updateSessionStatus()
  *   - Updates 'user_sessions' table with feedback completion status
  *
  * Data Read from localStorage:
@@ -62,7 +62,7 @@ import {
 import { SimulationMetrics } from '../types';
 import { SessionDVs, TelemetryEvent } from '../types/tracking';
 import { TrackingManager } from '../utils/trackingUtils';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 
 interface FeedbackData {
   decisionSatisfaction: number;
@@ -389,13 +389,13 @@ const ResultsFeedbackPage: React.FC = () => {
     existingLogs.push(telemetryEvent);
     localStorage.setItem('sessionEventLogs', JSON.stringify(existingLogs));
 
-    const sessionId = DatabaseService.getSessionId();
+    const sessionId = MongoService.getSessionId();
 
     // Retrieve the tracking lists from localStorage
     const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
     const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
 
-    await DatabaseService.insertSessionFeedback({
+    await MongoService.insertSessionFeedback({
       session_id: sessionId,
       decision_satisfaction: feedback.decisionSatisfaction,
       process_satisfaction: feedback.processSatisfaction,
@@ -414,12 +414,12 @@ const ResultsFeedbackPage: React.FC = () => {
       checking_alignment_list: checkingAlignmentList
     });
 
-    await DatabaseService.updateUserSession(sessionId, {
+    await MongoService.updateUserSession(sessionId, {
       is_completed: true,
       completed_at: new Date().toISOString()
     });
 
-    await DatabaseService.syncFallbackData();
+    await MongoService.syncFallbackData();
 
     setIsSubmitted(true);
     setShowExport(true);

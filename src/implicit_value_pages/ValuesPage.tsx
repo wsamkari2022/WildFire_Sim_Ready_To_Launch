@@ -17,7 +17,7 @@
  * - ProgressTracker component: Progress display
  *
  * Direct Database Calls:
- * 1. DatabaseService.insertBaselineValues()
+ * 1. MongoService.insertBaselineValues()
  *    - Inserts matched stable values into 'baseline_values' table
  *    - Stores: session_id, value_name, match_percentage, rank_order
  *
@@ -69,7 +69,7 @@ import type { DeepValue } from '../types/implicitPrefernce';
 import type { ExplicitValue } from '../types/explicitValues';
 import { explicitQuestions } from '../data/explicitQuestions';
 import { scenarios } from '../data/ImplicitScenarios';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 import ProgressTracker from '../components/ProgressTracker';
 
 // Interface for tracking value frequency in explicit choices
@@ -223,7 +223,7 @@ const ValuesPage: React.FC = () => {
     // Handler for starting the simulation
     const handleStartSimulation = async () => {
         try {
-            const sessionId = DatabaseService.getSessionId();
+            const sessionId = MongoService.getSessionId();
 
             const userValues = {
                 explicit: explicitValues.map(v => v.value_selected),
@@ -247,9 +247,9 @@ const ValuesPage: React.FC = () => {
                 value_type: 'stable'
             }));
 
-            await DatabaseService.insertBaselineValues(baselineValues);
+            await MongoService.insertBaselineValues(baselineValues);
 
-            await DatabaseService.insertValueEvolution({
+            await MongoService.insertValueEvolution({
                 session_id: sessionId,
                 scenario_id: 0,
                 value_list_snapshot: topTwoValues,

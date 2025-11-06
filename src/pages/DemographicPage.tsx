@@ -48,7 +48,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleUser as UserCircle, ArrowRight, Flame, Shield, Users, Zap, Info } from 'lucide-react';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 
 const DemographicPage: React.FC = () => {
   const navigate = useNavigate();
@@ -106,12 +106,12 @@ const DemographicPage: React.FC = () => {
 
     localStorage.setItem('userDemographics', JSON.stringify(formData));
 
-    const sessionId = DatabaseService.generateSessionId();
+    const sessionId = MongoService.generateSessionId();
     localStorage.setItem('currentSessionId', sessionId);
 
     const consentData = JSON.parse(localStorage.getItem('userConsent') || '{}');
 
-    await DatabaseService.createUserSession({
+    await MongoService.createUserSession({
       session_id: sessionId,
       demographics: formData,
       consent_agreed: consentData.agreed || false,

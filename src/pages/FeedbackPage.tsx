@@ -21,16 +21,16 @@
  * - ValueStabilityTable: Component for stability analysis
  *
  * Direct Database Calls:
- * 1. DatabaseService.insertSessionFeedback()
+ * 1. MongoService.insertSessionFeedback()
  *    - Inserts comprehensive feedback into 'session_feedback' table
  *    - Stores all CVR, APA, visualization, and overall feedback ratings/comments
  *    - Also stores calculated metrics: valueConsistencyIndex, performanceComposite, balanceIndex
  *
- * 2. DatabaseService.updateUserSession()
+ * 2. MongoService.updateUserSession()
  *    - Updates 'user_sessions' table with completion status
  *    - Sets is_completed = true, completed_at timestamp
  *
- * 3. DatabaseService.syncFallbackData()
+ * 3. MongoService.syncFallbackData()
  *    - Attempts to sync any failed database insertions from localStorage
  *
  * Data Read from localStorage:
@@ -147,7 +147,7 @@ import { Bar, Line } from 'react-chartjs-2';
 import { SessionDVs } from '../types/tracking';
 import { SimulationMetrics } from '../types';
 import { TrackingManager } from '../utils/trackingUtils';
-import { DatabaseService } from '../lib/databaseService';
+import { MongoService } from '../lib/mongoService';
 import ValueStabilityTable from '../components/ValueStabilityTable';
 
 ChartJS.register( 
@@ -708,12 +708,12 @@ const FeedbackPage: React.FC = () => {
     existingLogs.push(telemetryEvent);
     localStorage.setItem('sessionEventLogs', JSON.stringify(existingLogs));
 
-    const sessionId = DatabaseService.getSessionId();
+    const sessionId = MongoService.getSessionId();
 
     const scenariosFinalDecisionLabels = JSON.parse(localStorage.getItem('ScenariosFinalDecisionLabels') || '[]');
     const checkingAlignmentList = JSON.parse(localStorage.getItem('CheckingAlignmentList') || '[]');
 
-    await DatabaseService.insertSessionFeedback({
+    await MongoService.insertSessionFeedback({
       session_id: sessionId,
       cvr_initial_reconsideration: feedback.cvrInitialReconsideration,
       cvr_final_reconsideration: feedback.cvrFinalReconsideration,
@@ -764,12 +764,12 @@ const FeedbackPage: React.FC = () => {
       checking_alignment_list: checkingAlignmentList
     });
 
-    await DatabaseService.updateUserSession(sessionId, {
+    await MongoService.updateUserSession(sessionId, {
       is_completed: true,
       completed_at: new Date().toISOString()
     });
 
-    await DatabaseService.syncFallbackData();
+    await MongoService.syncFallbackData();
 
     setIsSubmitted(true);
     setShowExport(true);

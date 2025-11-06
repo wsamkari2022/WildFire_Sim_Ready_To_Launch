@@ -1,52 +1,4 @@
-/**
- * DATABASE SERVICE - SUPABASE DATABASE OPERATIONS
- *
- * Purpose:
- * - Centralized service for all database interactions
- * - Provides methods for inserting/updating data in Supabase
- * - Implements localStorage fallback for offline scenarios
- * - Handles session management and data persistence
- *
- * Dependencies:
- * - supabaseClient: Supabase connection instance
- *
- * Database Tables Used:
- * 1. user_sessions: Participant demographics and session metadata
- * 2. baseline_values: Explicit and implicit value assessments
- * 3. scenario_interactions: Every user interaction during simulation
- * 4. cvr_responses: CVR question answers and response times
- * 5. apa_reorderings: Value reordering events
- * 6. final_decisions: Confirmed decisions per scenario
- * 7. value_evolution: Changes in value priorities
- * 8. session_feedback: Comprehensive post-simulation feedback
- *
- * Key Features:
- * - Automatic localStorage fallback on database failure
- * - Session ID generation and management
- * - Batch sync of failed operations
- * - Type-safe interfaces for all database operations
- * - Error logging for debugging
- *
- * Fallback Mechanism:
- * - If database insert fails, data saved to localStorage with prefix 'db_fallback_'
- * - syncFallbackData() attempts to sync all failed operations
- * - Marks successfully synced items to prevent duplicates
- *
- * Usage Pattern:
- * 1. Call appropriate insert method (e.g., insertScenarioInteraction)
- * 2. Method attempts Supabase insertion
- * 3. On failure, saves to localStorage fallback
- * 4. Returns success/failure boolean
- * 5. Periodically or on completion, call syncFallbackData()
- *
- * Notes:
- * - All methods are static (no instantiation needed)
- * - Uses TypeScript interfaces for type safety
- * - Comprehensive error handling and logging
- * - Critical for data integrity and no data loss
- */
-
-import { supabase } from './supabaseClient';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
 export interface UserSession {
   session_id: string;
@@ -189,7 +141,49 @@ export interface SessionFeedback {
   checking_alignment_list?: string[];
 }
 
-export class DatabaseService {
+export interface SessionMetrics {
+  session_id: string;
+  cvr_arrivals: number;
+  cvr_yes_count: number;
+  cvr_no_count: number;
+  apa_reorderings: number;
+  misalign_after_cvr_apa_count: number;
+  realign_after_cvr_apa_count: number;
+  switch_count_total: number;
+  avg_decision_time: number;
+  decision_times: number[];
+  value_consistency_index: number;
+  performance_composite: number;
+  balance_index: number;
+  final_alignment_by_scenario: boolean[];
+  value_order_trajectories: Array<{
+    scenarioId: number;
+    values: string[];
+    preferenceType: string;
+  }>;
+  scenario_details: Array<{
+    scenarioId: number;
+    finalChoice: string;
+    aligned: boolean;
+    switches: number;
+    timeSeconds: number;
+    cvrVisited: boolean;
+    cvrVisitCount: number;
+    cvrYesAnswers: number;
+    apaReordered: boolean;
+    apaReorderCount: number;
+  }>;
+  scenarios_final_decision_labels?: string[];
+  checking_alignment_list?: string[];
+  final_values?: string[];
+  moral_values_reorder_list?: string[];
+  scenario1_moral_value_reordered?: any[];
+  scenario2_moral_value_reordered?: any[];
+  scenario3_moral_value_reordered?: any[];
+  scenario3_infeasible_options?: any[];
+}
+
+export class MongoService {
   static async createUserSession(data: UserSession) {
     try {
       const insertData: any = {
@@ -213,43 +207,41 @@ export class DatabaseService {
         insertData.moral_reasoning_experience = data.demographics.moralReasoningExperience;
       }
 
-      const { data: session, error } = await supabase
-        .from('user_sessions')
-        .insert(insertData)
-        .select()
-        .maybeSingle();
+      const response = await fetch(`${API_BASE_URL}/user-sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(insertData)
+      });
 
-      if (error) {
-        console.error('Error creating user session:', error);
-        this.saveToLocalStorageFallback('user_sessions', data);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error creating user session:', result);
         return null;
       }
 
-      return session;
+      return result.data;
     } catch (error) {
       console.error('Exception creating user session:', error);
-      this.saveToLocalStorageFallback('user_sessions', data);
       return null;
     }
   }
 
   static async updateUserSession(sessionId: string, updates: Partial<UserSession> & { is_completed?: boolean; completed_at?: string; status?: string; study_fully_completed?: boolean }) {
     try {
-      const { error } = await supabase
-        .from('user_sessions')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('session_id', sessionId);
+      const response = await fetch(`${API_BASE_URL}/user-sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
 
-      if (error) {
-        console.error('Error updating user session:', error);
-        this.saveToLocalStorageFallback('user_sessions_updates', { sessionId, updates });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error updating user session:', result);
       }
     } catch (error) {
       console.error('Exception updating user session:', error);
-      this.saveToLocalStorageFallback('user_sessions_updates', { sessionId, updates });
     }
   }
 
@@ -259,206 +251,177 @@ export class DatabaseService {
 
   static async insertBaselineValues(values: BaselineValue[]) {
     try {
-      const { error } = await supabase
-        .from('baseline_values')
-        .insert(values);
+      const response = await fetch(`${API_BASE_URL}/baseline-values`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
+      });
 
-      if (error) {
-        console.error('Error inserting baseline values:', error);
-        this.saveToLocalStorageFallback('baseline_values', values);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting baseline values:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting baseline values:', error);
-      this.saveToLocalStorageFallback('baseline_values', values);
       return false;
     }
   }
 
   static async insertScenarioInteraction(interaction: ScenarioInteraction) {
     try {
-      const { error } = await supabase
-        .from('scenario_interactions')
-        .insert(interaction);
+      const response = await fetch(`${API_BASE_URL}/scenario-interactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(interaction)
+      });
 
-      if (error) {
-        console.error('Error inserting scenario interaction:', error);
-        this.saveToLocalStorageFallback('scenario_interactions', interaction);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting scenario interaction:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting scenario interaction:', error);
-      this.saveToLocalStorageFallback('scenario_interactions', interaction);
       return false;
     }
   }
 
   static async insertCVRResponse(response: CVRResponse) {
     try {
-      const { error } = await supabase
-        .from('cvr_responses')
-        .insert(response);
+      const apiResponse = await fetch(`${API_BASE_URL}/cvr-responses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(response)
+      });
 
-      if (error) {
-        console.error('Error inserting CVR response:', error);
-        this.saveToLocalStorageFallback('cvr_responses', response);
+      const result = await apiResponse.json();
+
+      if (!apiResponse.ok || !result.success) {
+        console.error('Error inserting CVR response:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting CVR response:', error);
-      this.saveToLocalStorageFallback('cvr_responses', response);
       return false;
     }
   }
 
   static async insertAPAReordering(reordering: APAReordering) {
     try {
-      const { error } = await supabase
-        .from('apa_reorderings')
-        .insert(reordering);
+      const response = await fetch(`${API_BASE_URL}/apa-reorderings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reordering)
+      });
 
-      if (error) {
-        console.error('Error inserting APA reordering:', error);
-        this.saveToLocalStorageFallback('apa_reorderings', reordering);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting APA reordering:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting APA reordering:', error);
-      this.saveToLocalStorageFallback('apa_reorderings', reordering);
       return false;
     }
   }
 
   static async insertFinalDecision(decision: FinalDecision) {
     try {
-      const { error } = await supabase
-        .from('final_decisions')
-        .insert(decision);
+      const response = await fetch(`${API_BASE_URL}/final-decisions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(decision)
+      });
 
-      if (error) {
-        console.error('Error inserting final decision:', error);
-        this.saveToLocalStorageFallback('final_decisions', decision);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting final decision:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting final decision:', error);
-      this.saveToLocalStorageFallback('final_decisions', decision);
       return false;
     }
   }
 
   static async insertValueEvolution(evolution: ValueEvolution) {
     try {
-      const { error } = await supabase
-        .from('value_evolution')
-        .insert(evolution);
+      const response = await fetch(`${API_BASE_URL}/value-evolution`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(evolution)
+      });
 
-      if (error) {
-        console.error('Error inserting value evolution:', error);
-        this.saveToLocalStorageFallback('value_evolution', evolution);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting value evolution:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting value evolution:', error);
-      this.saveToLocalStorageFallback('value_evolution', evolution);
       return false;
     }
   }
 
   static async insertSessionFeedback(feedback: SessionFeedback) {
     try {
-      const { error } = await supabase
-        .from('session_feedback')
-        .insert(feedback);
+      const response = await fetch(`${API_BASE_URL}/session-feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(feedback)
+      });
 
-      if (error) {
-        console.error('Error inserting session feedback:', error);
-        this.saveToLocalStorageFallback('session_feedback', feedback);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error('Error inserting session feedback:', result);
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('Exception inserting session feedback:', error);
-      this.saveToLocalStorageFallback('session_feedback', feedback);
       return false;
     }
   }
 
-  private static saveToLocalStorageFallback(key: string, data: any) {
+  static async insertSessionMetrics(metrics: SessionMetrics) {
     try {
-      const existingData = JSON.parse(localStorage.getItem(`db_fallback_${key}`) || '[]');
-      existingData.push({
-        data,
-        timestamp: new Date().toISOString(),
-        synced: false
+      const response = await fetch(`${API_BASE_URL}/session-metrics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metrics)
       });
-      localStorage.setItem(`db_fallback_${key}`, JSON.stringify(existingData));
-    } catch (error) {
-      console.error('Error saving to localStorage fallback:', error);
-    }
-  }
 
-  static async syncFallbackData() {
-    const fallbackKeys = [
-      'user_sessions',
-      'user_sessions_updates',
-      'baseline_values',
-      'scenario_interactions',
-      'cvr_responses',
-      'apa_reorderings',
-      'final_decisions',
-      'value_evolution',
-      'session_feedback'
-    ];
+      const result = await response.json();
 
-    for (const key of fallbackKeys) {
-      const fallbackKey = `db_fallback_${key}`;
-      const fallbackData = JSON.parse(localStorage.getItem(fallbackKey) || '[]');
-
-      if (fallbackData.length === 0) continue;
-
-      const unsyncedData = fallbackData.filter((item: any) => !item.synced);
-
-      for (const item of unsyncedData) {
-        let success = false;
-
-        try {
-          if (key === 'user_sessions_updates') {
-            await this.updateUserSession(item.data.sessionId, item.data.updates);
-            success = true;
-          } else {
-            const tableName = key.replace('db_fallback_', '');
-            const { error } = await supabase
-              .from(tableName)
-              .insert(item.data);
-
-            if (!error) {
-              success = true;
-            }
-          }
-
-          if (success) {
-            item.synced = true;
-          }
-        } catch (error) {
-          console.error(`Error syncing fallback data for ${key}:`, error);
-        }
+      if (!response.ok || !result.success) {
+        console.error('Error inserting session metrics:', result);
+        return false;
       }
 
-      localStorage.setItem(fallbackKey, JSON.stringify(fallbackData));
+      return true;
+    } catch (error) {
+      console.error('Exception inserting session metrics:', error);
+      return false;
     }
   }
 
