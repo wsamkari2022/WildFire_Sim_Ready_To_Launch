@@ -39,11 +39,9 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
   currentMetrics,
   onReorderPriorities
 }) => {
-  const [selectedOption, setSelectedOption] = useState<DecisionOption | null>(null);
   const [rankedOptions, setRankedOptions] = useState<DecisionOption[]>([]);
   const [preferenceMessage, setPreferenceMessage] = useState('');
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
-  const [previewMetrics, setPreviewMetrics] = useState(currentMetrics);
   const [showBubbleTooltip, setShowBubbleTooltip] = useState(true);
   const [hasClickedMetric, setHasClickedMetric] = useState(false);
 
@@ -114,23 +112,6 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
     setRankedOptions(sortedOptions);
   }, [scenario]);
 
-  useEffect(() => {
-    if (selectedOption) {
-      const newMetrics = {
-        livesSaved: currentMetrics.livesSaved + selectedOption.impact.livesSaved,
-        humanCasualties: currentMetrics.humanCasualties + selectedOption.impact.humanCasualties,
-        firefightingResource: Math.max(0, currentMetrics.firefightingResource + selectedOption.impact.firefightingResource),
-        infrastructureCondition: Math.max(0, currentMetrics.infrastructureCondition + selectedOption.impact.infrastructureCondition),
-        biodiversityCondition: Math.max(0, currentMetrics.biodiversityCondition + selectedOption.impact.biodiversityCondition),
-        propertiesCondition: Math.max(0, currentMetrics.propertiesCondition + selectedOption.impact.propertiesCondition),
-        nuclearPowerStation: Math.max(0, currentMetrics.nuclearPowerStation + selectedOption.impact.nuclearPowerStation),
-      };
-      setPreviewMetrics(newMetrics);
-    } else {
-      setPreviewMetrics(currentMetrics);
-    }
-  }, [selectedOption, currentMetrics]);
-
   const calculateValuesScore = (option: DecisionOption, rankings: any[]) => {
     let score = 0;
     const weights = rankings.map((_, index) => rankings.length - index);
@@ -172,22 +153,19 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
     }
   };
 
-  const handleConfirm = () => {
-    if (selectedOption) {
-      // Track if user selected from top 2 options
-      const selectedIndex = rankedOptions.findIndex(opt => opt.id === selectedOption.id);
-      const isTop2 = selectedIndex < 2;
+  const handleConfirm = (option: DecisionOption, index: number) => {
+    // Track if user selected from top 2 options
+    const isTop2 = index < 2;
 
-      // Set flag indicating user has reordered their values
-      localStorage.setItem('hasReorderedValues', 'true');
+    // Set flag indicating user has reordered their values
+    localStorage.setItem('hasReorderedValues', 'true');
 
-      // Increment counter for hasReorderedValues
-      const currentCount = localStorage.getItem('hasReorderedValuesCount');
-      const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
-      localStorage.setItem('hasReorderedValuesCount', newCount.toString());
+    // Increment counter for hasReorderedValues
+    const currentCount = localStorage.getItem('hasReorderedValuesCount');
+    const newCount = currentCount ? parseInt(currentCount) + 1 : 1;
+    localStorage.setItem('hasReorderedValuesCount', newCount.toString());
 
-      onConfirm(selectedOption, isTop2);
-    }
+    onConfirm(option, isTop2);
   };
 
   return (
@@ -275,64 +253,72 @@ const RankedOptionsView: React.FC<RankedOptionsViewProps> = ({
 
           <div className="space-y-4">
             {rankedOptions.map((option, index) => {
-              const isDisabled = index >= 2;
+              const isLocked = index >= 2;
               return (
                 <div
                   key={option.id}
-                  onClick={() => !isDisabled && setSelectedOption(option)}
-                  className={`p-4 rounded-lg border transition-all duration-200 relative ${
-                    isDisabled
-                      ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                      : selectedOption?.id === option.id
-                      ? 'border-blue-500 bg-blue-50 cursor-pointer'
-                      : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
+                  className={`rounded-lg border transition-all duration-200 ${
+                    isLocked
+                      ? 'border-gray-200 bg-gray-50 opacity-60'
+                      : 'border-gray-200 bg-white'
                   }`}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`w-8 h-8 flex items-center justify-center rounded-full font-semibold ${
-                      isDisabled
-                        ? 'bg-gray-200 text-gray-500'
-                        : 'bg-blue-100 text-blue-600'
-                    }`}>
-                      {index + 1}
-                    </span>
-                    <h3 className={`font-medium ${
-                      isDisabled ? 'text-gray-500' : 'text-gray-900'
-                    }`}>{option.title}</h3>
-                    {isDisabled && (
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-gray-600 text-white text-xs font-medium rounded">
-                        <Lock size={11} />
-                        Locked
-                      </div>
-                    )}
-                    <div className="flex-1"></div>
-                    {selectedMetric && (
-                      <span className={`font-medium ${
-                        isDisabled
-                          ? 'text-gray-400'
-                          : metricButtons.find(m => m.id === selectedMetric)?.color
+                  <div className="grid grid-cols-[auto_1fr_auto] gap-4 p-4 items-start">
+                    {/* Column 1: Rank Number */}
+                    <div className="flex flex-col items-center justify-start pt-1">
+                      <span className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-lg ${
+                        isLocked
+                          ? 'bg-gray-200 text-gray-500'
+                          : 'bg-blue-100 text-blue-600'
                       }`}>
-                        {getMetricValue(option, selectedMetric)}
+                        {index + 1}
                       </span>
-                    )}
+                    </div>
+
+                    {/* Column 2: Option Content */}
+                    <div className="flex flex-col gap-2 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className={`font-medium text-base ${
+                          isLocked ? 'text-gray-500' : 'text-gray-900'
+                        }`}>{option.title}</h3>
+                        {isLocked && (
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-gray-600 text-white text-xs font-medium rounded">
+                            <Lock size={11} />
+                            Locked
+                          </div>
+                        )}
+                        {selectedMetric && (
+                          <span className={`font-medium text-sm ml-auto ${
+                            isLocked
+                              ? 'text-gray-400'
+                              : metricButtons.find(m => m.id === selectedMetric)?.color
+                          }`}>
+                            {getMetricValue(option, selectedMetric)}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm ${
+                        isLocked ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{option.description}</p>
+                    </div>
+
+                    {/* Column 3: Select Button (only for unlocked options) */}
+                    <div className="flex items-center justify-center pt-1">
+                      {!isLocked && (
+                        <button
+                          onClick={() => handleConfirm(option, index)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg flex items-center gap-2 transition-colors duration-200 whitespace-nowrap"
+                        >
+                          <Check size={16} />
+                          Select
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className={`text-sm ${
-                    isDisabled ? 'text-gray-400' : 'text-gray-600'
-                  }`}>{option.description}</p>
                 </div>
               );
             })}
           </div>
-
-          {selectedOption && (
-            <button
-              onClick={handleConfirm}
-              className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors duration-200"
-            >
-              <Check size={16} className="mr-1" />
-              Select Option
-            </button>
-          )}
         </div>
       </div>
     </div>
