@@ -9,6 +9,9 @@ interface DecisionSummaryModalProps {
   onConfirmDecision: () => void;
   canConfirm: boolean;
   onReviewAlternatives: () => void;
+  showMisalignmentWarning?: boolean;
+  scenarioNumber?: number;
+  matchedStableValues?: string[];
 }
 
 const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
@@ -17,7 +20,10 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
   option,
   onConfirmDecision,
   canConfirm,
-  onReviewAlternatives
+  onReviewAlternatives,
+  showMisalignmentWarning = false,
+  scenarioNumber,
+  matchedStableValues = []
 }) => {
   const [showWarningPopup, setShowWarningPopup] = useState(false);
   const [isImpactExpanded, setIsImpactExpanded] = useState(true);
@@ -142,6 +148,28 @@ const DecisionSummaryModal: React.FC<DecisionSummaryModalProps> = ({
 
         {/* Body */}
         <div ref={scrollContainerRef} className="p-6 flex-1 overflow-auto relative">
+          {/* Misalignment Warning - Only for Scenario 3 */}
+          {showMisalignmentWarning && scenarioNumber === 3 && (
+            <div className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 rounded-xl shadow-lg p-4 animate-pulse">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <AlertTriangle className="text-red-600" size={24} />
+                </div>
+                <div className="flex-1">
+                  <h5 className="font-bold text-red-900 text-base mb-2">Warning: This Option Does Not Align With Your Values</h5>
+                  <p className="text-red-800 text-sm leading-relaxed mb-3">
+                    The option you've selected (<strong>{option.label}</strong>) is not aligned with your top stable values{matchedStableValues.length > 0 && ` (${matchedStableValues.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')})`}.
+                  </p>
+                  <div className="bg-red-100 border-l-4 border-red-500 p-3 rounded-r-lg">
+                    <p className="text-red-900 text-sm font-semibold">
+                      Please carefully consider whether this decision reflects what matters most to you before confirming.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Informative Message */}
           <div className="mb-6 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl shadow-md p-4">
             <div className="flex items-start gap-3">
